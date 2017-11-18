@@ -1,0 +1,334 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+.vertical{
+	flex-direction: column;
+}
+nav {
+	padding: 5px;
+	height: 55px;
+	line-height: 55px;
+	display: block;
+	font-size: 20px;
+	backgroun: #fff;
+}
+
+.logo {
+	display: inline-block;
+	margin-left: 20px;
+	font-size: 30px;
+	padding-left: 20px;
+}
+
+.logoImg {
+	height: 55px;
+	width: 55px;
+	vertical-align: middle;
+}
+
+nav ul {
+	height: 55px;
+	float: right;
+	margin-right: 20px;
+}
+
+nav ul li {
+	text-align: center;
+	margin-right: 20px;
+	list-style: none;
+	display: inline-block;
+	line-height: 55px;
+}
+
+nav ul li:hover {
+	color: #E74F4D;
+}
+
+.login {
+	color: #e74f4d;
+}
+
+.login img {
+	height: 20px;
+}
+
+.main {
+	color: #FFFFFF;
+	height: 700px;
+	background-image: url(../img/任务7/images/task_1_7_1-1_03.jpg);
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+.text {
+	padding: 350px 10%;
+}
+
+.main div span {
+	font-size: 50px;
+}
+
+.main button {
+	font-size: 30px;
+	height: 55px;
+	width: 320px;
+	color: #FFFFFF;
+	background-color: #E74F4D;
+}
+
+#page1 footer {
+	padding: 0 100px;
+	display: flex;
+	
+	height: 250px;
+	background: #FFFFFF;
+	text-align: center;
+}
+
+#page1 footer img{
+	margin: 20px auto;
+	width: 30px;
+	height: 30px;
+}
+
+#page1 footer div {
+	text-align: center;
+	padding: 0 20px;
+	height: 100%;
+}
+
+
+
+.newWorld {
+	text-align: center;
+	height: 250px;
+	background: #ececec;
+}
+
+.newWorld div {
+	padding: 40px;
+	text-align: center;
+	color: #8f8f8f;
+	font-size: 30px;
+}
+
+.selectCity {
+	background-image: url(../img/任务7/images/task_1_7_1-1_03.jpg);
+	height: 330px;
+	background-repeat: no-repeat;
+	background-size: cover;
+	text-align: center;
+	color: white;
+	padding: 20%;
+}
+
+.selectBtns {
+	padding: 20px;
+}
+
+.btn {
+	display: inline-block;
+	width: 120px;
+	height: 40px;
+	color: #8F8F8F;
+	background: #FFFFFF;
+	appearance: none;
+}
+
+button[class='btn'] {
+	color: white;
+	background: #E74F4D;
+}
+
+.event_box {
+	height: 600px;
+	background: #f7f7f7;
+	padding-top: 30%;
+	text-align: center;
+}
+
+.event {
+	margin: 0 30px;
+	display: inline-block;
+	text-align: center;
+	height: 380px;
+	width: 200px;
+}
+
+.event img {
+	height: 330px;
+	width: inherit;
+	border: 5px solid #8F8F8F;
+}
+
+.event span {
+	font-size: 30px;
+	text-align: justify;
+}
+
+.column2 {
+	height: 560px;
+	text-align: center;
+}
+
+.column2_1 {
+	
+	display: inline-block;
+	height: inherit;
+	width: 66%;
+	background: #ECECEC;
+	
+	
+}
+.column2_1 div{
+	padding-top: 30%;
+}
+
+.column2_2 {
+	width: 34%;
+	display: inline-block;
+	height: inherit;
+}
+.column2_2_box{
+	padding-top: 30%;
+}
+.dot{
+	width: 20px;
+	height: 20px;
+	display: inline-block;
+	border: 2px solid black;
+	border-radius: 20px;
+}
+.column3{
+	height: 515px;
+	
+	text-align: center;
+}
+.column3_page{
+	height: inherit;
+	width: 33%;
+}
+.column3_page div{
+	padding: 30%;
+}
+.column3_page span{
+	display: block;
+	margin: auto;
+	width: 100px;
+	height: 30px;
+	color: #E74F4D;
+	border: 1px solid #E74F4D;
+	padding:10px;
+	line-height: 30px;
+	
+}
+.bg_r{color: #FFFFFF;
+	background: #E74F4D;
+}
+.bg_r span{
+	color: #FFFFFF;
+	border-color: #FFFFFF;
+}
+.bg_i{
+	background-image: url(../img/任务7/images/task_1_7_1-1_03.jpg);
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.v_head{
+	height:280px;
+	font-size: 20px;
+	flex-direction: column;
+}
+
+.son_vertical_middle{
+	display:flex;
+   justify-content:center;
+   text-align: center;
+}
+.v_body{
+	justify-content: center;
+}
+.form tr{
+	height: 30px;
+}
+.form tr input{
+	height: 100%;
+}
+.form textarea{
+	resize: none;
+	width: 100%;
+	height:150px;
+	overflow: auto;
+}
+.form button{
+	width: 100%;
+	height: 40px;
+	cursor:pointer;
+	border:none;
+	background:#ECECEE;
+	color:#888;
+	padding:10px;
+	font-size:15px;
+}
+.f_btn{
+	
+	border:none;
+	background: #ececee;
+	
+	
+}
+::-webkit-input-placeholder {
+ color:#888;
+}
+:-moz-placeholder {
+ color:#888;
+}
+::-moz-placeholder {
+ color:#888;
+}
+:-ms-input-placeholder {
+ color:#888;
+}
+.xieyi{
+	flex-direction: column;
+	display: flex;
+	justify-content: space-around;
+}
+#footer{
+	height: 370px;
+	flex-direction: column;
+	color:white;
+	background: #32353e;
+}
+#footer button{
+	height: 30px;
+	width: 50px;
+	border: 1px solid #6f7278 ;
+	background: #6F7278;
+	color: #ECECEE;
+}
+.email{
+	margin: 20px;
+}
+
+.btn_input{	
+	width: 300px;
+	height: 30px;
+	border:none;
+}
+.social_logo img{
+	height:30px;
+}
+.bottomBar{
+	background:#000000;
+	justify-content: space-between;
+}
+.bottomBar p {
+	margin: 10px;
+	color: white;
+}
+.bottomBar a{
+	margin: 10px;
+}
+
