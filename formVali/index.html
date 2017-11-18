@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>表单验证展示</title>
+		<style type="text/css">
+			.form {
+				height: 30px;
+				line-height: 30px;
+				margin-bottom: 20px;
+				margin-left: 50px;
+			}
+			
+			.form-input {
+				display: inline-block;
+				vertical-align: top;
+			}
+			
+			.form-input-place {
+				border-radius: 5px;
+				height: 20px;
+				width: 200px;
+				outline: 0;
+				border: 2px solid #ccc;
+				padding: 2px;
+				vertical-align: middle;
+			}
+			
+			.input_right {
+				border-color: limegreen;
+			}
+			
+			.input_wrong {
+				border-color: red;
+			}
+			
+			.form-input-warn {
+				line-height: 15px;
+				margin: 2px 0 0 2px;
+				font-size: 60%;
+				color: #ccc;
+			}
+			
+			.warn_wrong {
+				color: red;
+			}
+			
+			.warn_right {
+				color: limegreen;
+			}
+			
+			.form-name {
+				vertical-align: middle;
+				margin: 0 10px;
+			}
+			
+			.form-btn {
+				vertical-align: middle;
+				display: inline-block;
+				padding: 0 10px;
+				margin: 0 20px;
+				min-width: 50px;
+				text-align: center;
+				border-radius: 5px;
+				background: lightseagreen;
+				color: white;
+				cursor: pointer;
+				transition: all .5s ease-in;
+			}
+			
+			.form-btn:hover {
+				background-color: limegreen;
+			}
+			
+			.test {
+				text-align: center;
+				margin: 0 auto;
+			}
+			
+			.location {
+				display: inline-block;
+				margin: 30px auto;
+				margin-left: calc(50% - 200px);
+			}
+			
+			.location input {
+				margin-left: 50px;
+			}
+			
+			.location input[type=text] {
+				border-radius: 5px;
+				height: 20px;
+				width: 200px;
+				outline: 0;
+				border: 2px solid #ccc;
+				padding: 2px;
+				vertical-align: middle;
+			}
+			
+			.location select {
+				min-width: 100px;
+				margin-left: 50px;
+				height: 30px;
+				font-size: 18px;
+				border-radius: 5px;
+				vertical-align: middle;
+			}
+			.location-choose{
+				height: 50px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="location">
+			<input type="radio" id='isStudent' name='isStudent' checked="checked" /><label for="isStudent">在校生</label>
+			<input type="radio" id='notStudent' name='isStudent' /><label for="notStudent">非在校生</label>
+			<div class="location-choose " data-type='block'>
+				<select name="city" data-name='isStudent'>
+				</select>
+				<select name="schools">
+				</select>
+			</div>
+			<div class="location-company" data-type='block' data-name='notStudent' style="display: none;">
+				<span>
+				就业单位
+			</span>
+				<input type="text" />
+			</div>
+		</div>
+
+		<div class="test">
+		</div>
+	</body>
+	<script type="text/javascript">
+		var $ = x => document.querySelector(x)
+		window.onload = function() {
+			//建立联系
+			var radio2block = function(r, b) {
+				let isShow = false
+				r.addEventListener('change', () => {
+					//多选
+					document.querySelectorAll('[data-type=block]').forEach((x) => {
+						x.style.display = 'none'
+					})
+					b.style.display = 'block'
+				})
+			}
+			radio2block($('#isStudent'), $('.location-choose'))
+			radio2block($('#notStudent'), $('.location-company'))
+			//联动select
+			let sData = [{
+					city: '北京',
+					schools: ['北大', '清华']
+				},
+				{
+					city: '广州',
+					schools: ['中大', '华工']
+				},
+				{
+					city: '天津',
+					schools: ['asd', 'dd']
+				}
+			]
+			var sConnects = function(data = []) {
+				let s = data.reduce((o, n) => {
+					let dom = document.createElement('option')
+					dom.innerText = n.city
+					dom.setAttribute('value', n.city)
+					$('select[name=city]').appendChild(dom)
+					o[n.city]={
+						el: dom,
+						schools: n.schools
+					}
+					
+					return o
+				}, {})
+				$('select[name=city]').addEventListener('change', (e) => {
+					e.stopPropagation()
+					let val = e.target.value
+					$('select[name=schools]').innerHTML = ''
+					s[val].schools.forEach(x => {
+						let sub = document.createElement('option')
+						sub.innerText = x
+						$('select[name=schools]').appendChild(sub)
+					})
+				})
+				//init
+				s[$('select[name=city]').value].schools.forEach(x => {
+						let sub = document.createElement('option')
+						sub.innerText = x
+						$('select[name=schools]').appendChild(sub)
+					})
+			}
+			sConnects(sData)
+			//form组
+			var formGroup = function(el, configs = []) {
+				this.dom = el
+				this.forms = configs.reduce((o, n, i) => {
+					o.push(new form(this.dom, n))
+					o[i].dom.querySelector('.form-btn').style.display = 'none'
+					return o
+				}, [])
+				let btn = document.createElement('a')
+				btn.setAttribute('class', 'form-btn')
+				btn.innerText = '验证'
+				btn.addEventListener('click', () => {
+					let names = this.forms.reduce((o, n, i) => {
+						if(n.valid() !== true)
+							o.push(n.name)
+						return o
+					}, [])
+					if(names.length > 0)
+						alert(names.join(' , ') + '填写不正确')
+					else alert('全部填写正确！')
+				})
+				this.dom.appendChild(btn)
+				return this
+			}
+			var form = function(el, config) {
+				this.name = config.name
+				this.dom = document.createElement('div')
+				this.dom.setAttribute('class', 'form')
+				//模板
+				let module = `<span class="form-name">${config.name}</span>
+			<div class="form-input">
+			<input class="form-input-place" type="text" placeholder="${config.placeholder||'请输入'}"/>
+			<p class='form-input-warn'>${config.warn.default}</p>
+			</div>
+			<a class="form-btn">验证</a>`
+				this.dom.innerHTML = module
+				//验证
+				this.valid = () => {
+					let val = this.dom.querySelector('input').value
+					switch(config.valid(val)) {
+						case true:
+							this.dom.querySelector('.form-input-place').className = 'form-input-place  input_right'
+							this.dom.querySelector('.form-input-warn').className = 'form-input-warn  warn_right'
+							this.dom.querySelector('.form-input-warn').innerText = config.warn.right
+							break
+						case 'zero':
+							this.dom.querySelector('.form-input-warn').innerText = config.name + '不能为空'
+							this.dom.querySelector('.form-input-place').className = 'form-input-place  input_wrong'
+							this.dom.querySelector('.form-input-warn').className = 'form-input-warn  warn_wrong'
+							break
+						case false:
+							this.dom.querySelector('.form-input-place').className = 'form-input-place  input_wrong'
+							this.dom.querySelector('.form-input-warn').className = 'form-input-warn  warn_wrong'
+							this.dom.querySelector('.form-input-warn').innerText = config.warn.wrong
+							break
+
+					}
+					return config.valid(val)
+				}
+				this.dom.addEventListener('blur', this.valid)
+				this.dom.addEventListener('keyup', this.valid)
+
+				if(el) el.appendChild(this.dom)
+				return this
+			}
+
+			let mailOption = {
+				name: '邮件',
+				warn: {
+					default: '必填，正确的邮箱格式',
+					right: '正确',
+					wrong: '不正确,请输入xx12_3x@1d23.qd.com'
+
+				},
+				valid: (val) => {
+					return !val ? 'zero' : /[a-z0-9A-Z_]+@([a-z0-9A-Z_]+[.])+[a-z0-9A-Z_s]+/.test(val)
+				}
+			}
+			let phoneOption = {
+				name: '手机号码',
+				warn: {
+					default: '必填，正确的手机号码',
+					right: '正确',
+					wrong: '不正确,请输入15600000000'
+
+				},
+				valid: (val) => {
+					return !val ? 'zero' : /^1\d{10}$/.test(val)
+				}
+			}
+			let idOption = {
+				name: '账号',
+				warn: {
+					default: '必填，6-10位，含有大小写字母与数字组合',
+					right: '正确',
+					wrong: '不正确,请填写6-10位，含有大小写字母与数字组合'
+
+				},
+				valid: (val) => {
+					return !val ? 'zero' : /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9]{6,10}$/.test(val)
+				}
+			}
+			let pwdOption = {
+				name: '密码',
+				warn: {
+					default: '必填，6-10位，含有大小写字母与数字组合',
+					right: '正确',
+					wrong: '不正确,请填写6-10位，含有大小写字母与数字组合'
+
+				},
+				valid: (val) => {
+					return !val ? 'zero' : /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9]{6,10}$/.test(val)
+				}
+			}
+			new formGroup($('.test'), [mailOption, phoneOption, idOption])
+
+		}
+	</script>
+
+</html>

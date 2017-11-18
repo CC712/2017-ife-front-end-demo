@@ -1,0 +1,229 @@
+html {
+	font-size: 16px;
+}
+
+body {
+	background: #DDDDDD;
+}
+
+header {
+	height: 4rem;
+	background-color: #0190FE;
+	line-height: 4rem;
+	z-index:0;
+}
+
+.header-logo {
+	display: inline-block;
+	height: 4rem;
+	width: 8rem;
+	background-image: url(../MobileLayout/img/bear3.png);
+	background-size: contain;
+	background-repeat: no-repeat;
+}
+
+.header-search {
+	float: right;
+	position: relative;
+}
+
+.header-search>input {
+	height: 2rem;
+	width: 2rem;
+	border-radius: 1rem 0.5rem 0.5rem 1rem;
+	border: 0;
+	padding-left: 2.1rem;
+	transition: width .5s ease-out;
+}
+
+.header-search>input:focus,.header-search:hover>input{
+	width: 10rem;
+}
+
+input:before {
+	content: 'asdas';
+}
+
+.header-search:before {
+	position: absolute;
+	left: -0.1rem;
+	top: 1rem;
+	display: inline-block;
+	content: '';
+	height: 2.1rem;
+	width: 2.1rem;
+	z-index: 1;
+	padding: 1px;
+	border-radius: 1.1rem;
+	vertical-align: middle;
+	background-color: white;
+	background-image: url(../MobileLayout/img/tags.png);
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+.header-login {
+	position: relative;
+	float: right;
+	color: white;
+	margin: 0 3rem;
+	padding: 0 2rem;
+}
+
+.header-login:before {
+	position: absolute;
+	left: 0;
+	top: 1.3rem;
+	z-index: 1;
+	content: '';
+	height: 1.5rem;
+	width: 1.5rem;
+	color: white;
+	background-color: #48576A;
+	background-image: url(../../music-app/static/img/login_07.jpg);
+	background-size: cover;
+}
+.ctx{
+	overflow: hidden;
+}
+.sidebar {
+	float: left;
+	width: 16rem;
+	background: #324157;
+	color: #C4C4C4;
+	height:100%;
+	min-height: 40rem;
+}
+
+.user {
+	margin: 2rem 0 2rem 0;
+	text-align: center;
+}
+
+.user-avatar {
+	display: inline-block;
+	vertical-align: middle;
+	height: 4rem;
+	width: 4rem;
+	border-radius: 2rem;
+	border: 1px solid #C4C4C4;
+	/*background-image: url(../MobileLayout/img/bear2.png);*/
+	background-image: radial-gradient(white 0,#ccc 50%,black 100%);
+	background-position: center center;
+	transition: all .5s ease-out;
+}
+.user-avatar:hover{
+	border-radius: 0;
+}
+.user-avatar:hover img{
+	clip-path: circle(4rem at 50% 50%);
+	
+}
+.user-avatar img {
+	clip-path: circle(1.8rem at 50% 50%);
+	height: 100%;
+	width: 100%;
+	transition: all 1s ease-in-out;
+}
+.user-name {
+	line-height: 4rem;
+	vertical-align: middle;
+	font-size: 1.5rem;
+	margin-left: 2rem;
+}
+.user-info{
+	display: flex;
+	justify-content: center;
+	font-size: 1.2rem;
+}
+.user-info>div{
+	padding: 1rem;
+	text-align: center;
+	width:4rem;
+}
+.user-info>div:nth-child(1){
+	border-right: 1px solid #C4C4C4;
+}
+.index{
+	margin-left: 3rem;
+}
+.index-item{
+	margin:1rem auto;
+}
+.index li {
+	list-style: none;
+	padding-left: 2rem;
+}
+.main{
+}
+.main-header{
+	background: white;
+	padding: 0.5rem;
+	font-size: 0.8rem;
+}
+.main-header a{
+	padding:0.5rem;
+	text-decoration: none;
+	
+}
+.main-header-tag:before{
+	content: '/';
+	color:#C4C4C4;
+	padding:0.5rem;
+}
+.main-header-tag{
+	position:relative;
+	display: inline-block;
+
+}
+.main-header-tag-bubble{
+	display: none;
+	position: absolute;
+	transform: translateX(-50%);
+	transform-origin: 50% 100%;
+	bottom: -2rem;
+	left: calc(50% + 0.5rem);
+	padding: 0.2rem;
+	border: 0.1rem solid black;
+	white-space: nowrap;
+	background: white;
+	box-shadow: 0.1rem 0.1rem 0.2rem #C0CCDA;
+}
+.main-header-tag:hover .main-header-tag-bubble{
+	display: block;
+}
+.main-header-tag-bubble:after{
+	position:absolute;
+	border-width: 0.6rem;
+	content: '';
+	width: 0;
+	height: 0;
+	font-size: 0;
+	border-color:  transparent transparent white transparent;
+	border-style: solid;
+	left:50%;
+	transform: translate(-50%,-50%);
+	top:-0.5rem;
+}
+.main-header-tag-bubble:before{
+	position:absolute;
+	border-width: 0.6rem;
+	content: '';
+	width: 0;
+	height: 0;
+	font-size: 0;
+	border-color:  transparent transparent black transparent;
+	border-style: solid;
+	left:50%;
+	transform: translate(-50%,-50%);
+	top:-0.7rem;
+}
+
+.module-card{
+	border:0.1rem solid #DCDCDC;
+	border-radius: 1rem;
+}
+.module-card-header{
+	padding: 1rem 2rem;
+	font-size:0.5rem;
+}
