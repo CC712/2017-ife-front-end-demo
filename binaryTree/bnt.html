@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>BinaryTree</title>
+	</head>
+	<style type="text/css">
+		.node{
+			border:1px solid black;
+			margin:0 1rem;
+			padding:0.5rem;
+			white-space: nowrap;
+			display: inline-flex;
+			background-color:white;
+			
+		}
+		.change{
+			animation: changeColor 300ms ; 
+		}
+		@keyframes changeColor{
+			from{background: white;}
+			50%{background: blueviolet;}
+			to{background: white;}
+		}
+	</style>
+	<body>
+		<div id='root' class="node"></div>
+		<div>
+		<label for="">输入树的层数<input type="number" class='layer' min='1' max='10' value="1"/></label>
+		<button class='before'>前序</button>
+		<button class="middle">中序</button>
+		<button class="after">后序</button>	
+		</div>
+		
+	</body>
+	<script type="text/javascript">
+		let mktree = function(d,n){
+			let mkdom =function(){
+				let re = document.createElement('div')
+				re.setAttribute("class","node")
+			return re 
+			}
+			if (n>0){
+				d.appendChild(mkdom());
+				d.appendChild(mkdom());
+				Array.prototype.forEach.call(d.querySelectorAll('.node'),x=>{
+					mktree(x,n-1)
+				})
+			}
+		}
+		
+		
+		//全局变量
+		let order = [],timer=null,root = document.querySelector('#root')
+		// 改变树的层级   尝试双向绑定
+		let layer = {}
+		Object.defineProperty(layer,'value',{
+			set :function(newVal){
+				root.innerHTML = ''
+				mktree(root,newVal-1)
+			}
+		})
+		//前序
+		let ldr = (r)=>{
+			if(r){
+			order.push(r)
+			ldr(r.children[0])
+			ldr(r.children[1])
+			}
+		}
+		let dlr = (r)=>{
+			if(r){
+			dlr(r.children[0])
+			order.push(r)
+			dlr(r.children[1])
+			}
+		}
+		let lrd = (r)=>{
+			if(r){
+			lrd(r.children[0])
+			lrd(r.children[1])
+			order.push(r)
+			}
+		}
+		// 改变颜色
+		let changeColor = function(){
+		let i = 0
+			timer=setInterval(()=>{
+			if (i>=order.length){
+				clearInterval(timer)
+			}else{
+				if(i>0) order[i-1].style.backgroundColor='white'
+				order[i].style.backgroundColor='red'
+				i++
+			}
+			
+		},700)
+		}
+		//重置 全局变量
+		var reset = ()=>{
+			clearInterval(timer)
+			order.forEach(x=>x.style.backgroundColor='white')
+			order = []
+		}
+		//组合函数
+		var btnHandler = (callback)=>{
+			reset()
+			callback(root)
+			changeColor()
+		}
+		// 绑定按钮
+		var $ =x=>document.querySelector(x)
+		$('.before').addEventListener('click',()=>{
+			btnHandler(ldr)
+		})
+		$('.middle').addEventListener('click',()=>{
+			btnHandler(dlr)
+		})
+		$('.after').addEventListener('click',()=>{
+			btnHandler(lrd)
+		})
+		$('.layer').addEventListener('input',(e)=>{
+			layer.value = e.target.value
+		})
+	</script>
+</html>
