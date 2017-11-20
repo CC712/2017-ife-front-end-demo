@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<style type="text/css">
+		.node {
+			border: 1px solid black;
+			margin: 0 1rem;
+			padding: 0.5rem;
+			white-space: nowrap;
+			display: inline-flex;
+			background-color: white;
+		}
+	</style>
+
+	<body>
+		<div id='root' class="node"></div>
+		<div>
+			<label for="">输入树的层数：<input type="number" class='layer' min='1' max='5' value="1"/></label>
+			<button class='before'>前序</button>
+			<button class="after">后序</button>
+		</div>
+		<div>
+			<label for="">搜索：<input type="text" class='search' /></label>
+			<button class="bfs">广度优先</button>
+			<button class="dfs">深度优先</button>
+		</div>
+	</body>
+	<script type="text/javascript">
+		let mktree = function(d, n, min = 1, max = 5) {
+			let mkdom = function() {
+				let re = document.createElement('div')
+				re.setAttribute("class", "node")
+				re.innerText = Math.floor(Math.random() * 100)
+				return re
+			}
+			if(n > 0) {
+				for(let i = Math.floor(min + Math.random() * max); i > 0; i--) {
+					d.appendChild(mkdom())
+
+				}
+
+				Array.prototype.forEach.call(d.querySelectorAll('.node'), x => {
+					mktree(x, n - 1, min, max)
+				})
+			}
+		}
+
+		//全局变量
+		let order = [],
+			timer = null,
+			root = document.querySelector('#root')
+		// 改变树的层级   尝试双向绑定
+		let layer = {}
+		Object.defineProperty(layer, 'value', {
+			set: function(newVal) {
+				root.innerHTML = ''
+				if(newVal <= 5)
+					mktree(root, newVal - 1)
+				else return 2
+			}
+		})
+		//前序
+		let ldr = (r) => {
+			if(r) {
+				order.push(r)
+				for(let i = 0; i < r.children.length; i++)
+					ldr(r.children[i])
+			}
+		}
+		//后序
+		let lrd = (r) => {
+			if(r) {
+				Array.prototype.forEach.call(r.children, (x) => {
+					lrd(x)
+				})
+				order.push(r)
+			}
+		}
+		//深度优先 非递归  辅助栈
+		/*伪代码
+		 * map 记录状态
+		 * 栈 初始化
+		 * root压栈
+		 * while(栈非空)
+		 *	x=栈顶
+		 * 	如果 满足条件
+		 *  	x=子节点  进栈
+		 *  不然  x=sibling 
+		 * 
+		 */
+		let dfs = (r, val) => {
+			//记录当前状态
+			let stack = []
+			//记录走过的
+			let visited = []
+			stack.push(r)
+			//深度优先， 一步到底 压栈
+			console.log('ww',stack)
+			while(stack.length > 0) {
+				//栈顶
+				let now = stack[stack.length - 1]
+				//子节点
+				let sub = now.children
+				let i = 0
+				//没走过的子节点
+				while( i<sub.length&&visited.indexOf(sub[i]) == -1) {
+					//更新当前状态
+					stack.push(sub[i])
+					visited.push(sub[i])
+					if(sub[i].children) {
+						//新栈顶
+						now = stack[stack.length - 1]
+						sub = now.children
+					}
+						if(now.innerText == val) {
+							console.log('find=>', stack)
+							order = stack
+							alert('找到了')
+							return
+						}
+						//没儿子可走 就加进状态
+						stack.push(sub[i])/*bug!!!*/
+					
+					//如果走不下去了，就返回上一个状态
+					
+					visited.indexOf(stack.pop())
+					i++
+				}
+				stack.pop()
+			}
+			console.log(visited)
+			alert('没找到')
+
+		}
+		let carry_dfs = function(val) {
+			return function(r) {
+				dfs(r, val)
+			}
+		}
+		//广度优先 非递归 辅助队列
+
+		let bfs = function(r, val) {
+			let query = []
+			let count = new Date
+			query.push(r)
+			while(query.length > 0) {
+				let nodelist = query.shift()
+				for(let i = 0, len = nodelist.children.length; i < len; i++) {
+					let x = nodelist.children[i]
+					if(x.innerText === val) {
+						query.push(x)
+						order.push(x)
+						console.timeEnd(1)
+						alert(`查询到${val},历时 ${new Date()-count} ms`)
+
+						return
+					}
+					query.push(x)
+					order.push(x)
+				}
+			}
+			alert(`查询到${val},历时 ${new Date()-count} ms`)
+			return 0
+		}
+		let carry_bfs = function(val) {
+			return function(r) {
+				bfs(r, val)
+			}
+		}
+		// 改变颜色
+		let changeColor = function() {
+			let i = 0
+			timer = setInterval(() => {
+				if(i >= order.length) {
+					clearInterval(timer)
+				} else {
+					if(i > 0) order[i - 1].style.backgroundColor = 'white'
+					order[i].style.backgroundColor = 'red'
+					i++
+				}
+
+			}, 100)
+		}
+		//重置 全局变量
+		var reset = () => {
+			clearInterval(timer)
+			order.forEach(x => x.style.backgroundColor = 'white')
+			order = []
+		}
+		//组合函数
+		var btnHandler = (callback) => {
+			reset()
+			callback(root)
+			changeColor()
+		}
+		// 绑定按钮
+		var $ = x => document.querySelector(x)
+		$('.before').addEventListener('click', () => {
+			btnHandler(ldr)
+		})
+		$('.after').addEventListener('click', () => {
+			btnHandler(lrd)
+		})
+		$('.bfs').addEventListener('click', () => {
+			btnHandler(carry_bfs($('.search').value))
+		})
+		$('.dfs').addEventListener('click', () => {
+			btnHandler(carry_dfs($('.search').value))
+		})
+		$('.layer').addEventListener('input', (e) => {
+			layer.value = e.target.value
+		})
+	</script>
+
+</html>
