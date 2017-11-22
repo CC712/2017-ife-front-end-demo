@@ -69,38 +69,50 @@ var Texas = (function() {
       })
     },
     validHand: function(player) {
+      // 所有的判定方法均返回一个数组 [ [具体对象]，[可能性2]]
       let hand = player.hand
+      //判断顺子
       var isStraight = (hand) => {
         //选五张,3组
         let s = []
-        hand.sort((a, b) => a.key - b.key)
-        s = [hand.slice(0, 5), hand.slice(1, 5), hand.slice(2, 5)]
+        hand.sort((a, b) => a - b)
+        s = hand.slice(0)
+        let re = []
         //验证 每组
-        let sStra = s.filter(x => x.reduce((o, n, i) => {
-          if(i > 0) o = hand[i - 1].val - n.val == -1 ? o : false
-          return o
-        }, true))
+        let stack = []
+        for(let i = 0; i < hand.length; i++) {
+          if(stack.length == 0) stack.push(s[i])
+          for(let j = i + 1; j < hand.length; j++) {
+            if(stack.length == 5) {
+              re.push(stack)
+              stack = []
+            }
+            if(stack[stack.length - 1] - s[j] === -1) {
+              stack.push(s[j])
+            }
+          }
+          console.log(re)
+        }
         //保存顺子的组
-        return sStra
+        return re
       }
-      var isTwoPair = (hand) => {
+      //两对 
+       var isTwoPair = (hand) => {
         //选对子
         let s = []
-        hand.sort((a, b) => a.key - b.key)
+        hand.sort((a, b) => a - b)
+		let re=[]
         s = hand.slice(0)
-        s = s.reduce((o, n, i) => {
-          while(s.indexOf(n) >= 0) {
-            o.push(s.splice(s.indexOf(n), 1))
-          }
-
-        }, [])
-        //验证 每组
-        let sTP = s.filter(x => x.reduce((o, n, i) => {
-          if(i > 0) o = hand[i - 1].val - n.val == -1 ? o : false
-          return o
-        }, true))
-        //保存顺子的组
-        return sTP
+        let pairs = s.filter((x, i) => s.indexOf(x) != i)
+        if(pairs.length == 2) {
+          //保存顺子的组
+		  for(let i = 0;i+2<=pairs.length;i++){
+          let one = hand.filter(x => pairs.slice(i,i+2).indexOf(x) == -1)[0]
+          re.push(Array.prototype.concat(one, hand.filter(x => pairs.indexOf(x) != -1)))
+		  }
+        }
+          
+		return re
       }
     }
   }
