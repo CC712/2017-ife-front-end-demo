@@ -53,5 +53,9 @@ function getTriangleArea(d, l){
 //let a = getLengthOfLine([[-1,1],[1,1]])
 //let b = getDistance2Line([1,1],[[-1,0],[1,0]])
 //let c = getTriangleArea(a,b)
-let d = pointInPoly([1,1],[[0,2],[-1,0],[1,0]])
+var poly = [
+  [-5, -5], [5, -5],
+  [5, 5], [-5, 5]
+];
+let d = pointInPoly(poly, [-6,0])
 console.log(d)
