@@ -71,7 +71,8 @@ var Texas = (function() {
     validHand: function(player) {
       // 所有的判定方法均返回一个数组 [ [具体对象]，[可能性2]]
       let hand = player.hand
-      //判断顺子
+      hand.sort((a, b) => a - b)
+      //顺子
       var isStraight = (hand) => {
         //选五张,3组
         let s = []
@@ -97,25 +98,46 @@ var Texas = (function() {
         return re
       }
       //两对 
-       var isTwoPair = (hand) => {
+      var isTwoPair = (hand) => {
         //选对子
         let s = []
         hand.sort((a, b) => a - b)
-		let re=[]
-        s = hand.slice(0)
+        let re = []
+        s = arange(hand, 2)
         let pairs = s.filter((x, i) => s.indexOf(x) != i)
+        //如果两对以上，选择大的
         if(pairs.length == 2) {
-          //保存顺子的组
-		  for(let i = 0;i+2<=pairs.length;i++){
-          let one = hand.filter(x => pairs.slice(i,i+2).indexOf(x) == -1)[0]
-          re.push(Array.prototype.concat(one, hand.filter(x => pairs.indexOf(x) != -1)))
-		  }
+          let maxPair = arange(pairs, 2).sort((a, b) => a.reduce((o, i) => o + i, 0) - b.reduce((o, i) => o + i, 0))[0]
+          //选择剩下的最大牌
+          for(let i = 0; i + 2 <= maxPair.length; i++) {
+            let one = hand.filter(x => maxPair.slice(i, i + 2).indexOf(x) == -1)[0]
+            re.push(Array.prototype.concat(one, hand.filter(x => maxPair.indexOf(x) != -1)))
+          }
         }
-          
-		return re
+        return re
       }
+      //同花
+      var isFlush = (hand) => {
+        hand.sort((a, b) => a - b)
+        //选择花色 遍历 
+        let type = 0
+        while(type < 4 && hand.filter(x => x.type == type).length < 5)
+          type++
+          //返回同花的数组 可能大于5张
+          return hand.length >4 hand.filter(x => x.type == type)
+      }
+      //四条 炸弹 hand 是数组>对象s
+      var isFour = (hand) => {
+        let iValue = hand.map(x => x.val)
+        let s = hand.filter((x, i) => iValue.indexOf(x.val) - iValue.lastIndexOf(x.val) <= -3)
+        if(s.length >= 4) {
+          let one = hand.filter(x => s.indexOf(x) == -1)[0]
+          return s.slice(0, 4).push(one)
+        } else {
+          return false
+        }
+      }
+      return new Texas()
     }
   }
-  return new Texas()
-})()
-Texas.init()
+})() Texas.init()
