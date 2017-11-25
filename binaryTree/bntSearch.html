@@ -43,7 +43,7 @@
 
 				}
 
-				Array.prototype.forEach.call(d.querySelectorAll('.node'), x => {
+				Array.prototype.forEach.call(d.queueSelectorAll('.node'), x => {
 					mktree(x, n - 1, min, max)
 				})
 			}
@@ -52,7 +52,7 @@
 		//全局变量
 		let order = [],
 			timer = null,
-			root = document.querySelector('#root')
+			root = document.queueSelector('#root')
 		// 改变树的层级   尝试双向绑定
 		let layer = {}
 		Object.defineProperty(layer, 'value', {
@@ -144,22 +144,22 @@
 		//广度优先 非递归 辅助队列
 
 		let bfs = function(r, val) {
-			let query = []
+			let queue = []
 			let count = new Date
-			query.push(r)
-			while(query.length > 0) {
-				let nodelist = query.shift()
+			queue.push(r)
+			while(queue.length > 0) {
+				let nodelist = queue.shift()
 				for(let i = 0, len = nodelist.children.length; i < len; i++) {
 					let x = nodelist.children[i]
 					if(x.innerText === val) {
-						query.push(x)
+						queue.push(x)
 						order.push(x)
 						console.timeEnd(1)
 						alert(`查询到${val},历时 ${new Date()-count} ms`)
 
 						return
 					}
-					query.push(x)
+					queue.push(x)
 					order.push(x)
 				}
 			}
@@ -198,7 +198,7 @@
 			changeColor()
 		}
 		// 绑定按钮
-		var $ = x => document.querySelector(x)
+		var $ = x => document.queueSelector(x)
 		$('.before').addEventListener('click', () => {
 			btnHandler(ldr)
 		})
