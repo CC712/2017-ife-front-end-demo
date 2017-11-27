@@ -29,3 +29,12 @@ function login(pwd) {
 	return pwd === '123woshishei'
 }
 let a = crack(login)
+//[ 1，2，3，2，1] =〉 [0,1,2,1,0] 右边比自己小的个数
+// [5,4,3,2,1] => [4,3,2,1,0]
+function get () {
+	// nlogn is better
+	// can i ?  for i => for k > i   n^2
+	let s = []
+	
+	
+}
