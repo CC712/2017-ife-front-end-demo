@@ -1,0 +1,67 @@
+<!DOCHTML>
+<html>
+<head>
+<style>
+.card {
+height:100px;
+margin-top:30px;
+display:block;
+border:0px solid black;
+line-height:100px;
+text-align:center;
+box-shadow:0 3px 10px #78c6efa8, 0 10px 12px #95ceeca8;
+}
+.an-active{
+	transition : all 1s ease-out;
+}
+.an-from,.an-leave-to{
+	opacity:0;
+	transform: translateX(-100%);
+}
+.r-active{
+	transition : all 1s ease-out;
+}
+.r-from,.r-leave-to{
+	opacity:0;
+	transform: translateX(100%);
+}
+.rotate-active{
+	transition : all 1s ease-out;
+}
+.rotate-from,.rotate-leave-to{
+	opacity:0;
+	transform: rotate(180deg);
+}
+</style>
+</head>
+<body>
+<div class='card' data-trans-name='an'>
+ 测试模块
+ </div>
+ <div class='card' data-trans-name='r'>
+ 测试模块
+ </div>
+ <div class='card' data-trans-name='r'>
+ 测试模块
+ </div>
+ <div class='card' data-trans-name='rotate'>
+ 测试模块
+ </div>
+ <div class='card' data-trans-name='an'>
+ 测试模块
+ </div>
+ <div class='card' data-trans-name='rotate'>
+ 测试模块
+ </div>
+ <div class='card' data-trans-name='r'>
+ 测试模块
+ </div>
+</body>
+<script src= './animate.js'></script>
+<script src = '../lazy-load/lazy.js'>
+</script>
+<script>
+PA.init()
+</script>
+
+</html>	
