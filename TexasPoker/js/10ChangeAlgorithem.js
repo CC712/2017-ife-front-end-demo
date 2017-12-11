@@ -38,10 +38,11 @@ function arange (arr=['A','B','C'],num=2){
 			} 
 	}
 	return re.reduce((o,str)=>{
-		console.log(str)
+		//console.log(str)
 		o.push(arr.filter((x,i)=>{
-			console.log(str.slice(i,i+1))
+			//console.log(str.slice(i,i+1))
 			return str.slice(i,i+1)!= 0}))
 			return o
 	},[])
 }
+export default arange
