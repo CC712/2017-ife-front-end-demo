@@ -13,8 +13,6 @@ function update(game) {
   // updating manage
   this.nowPos = 0
   //chip manage
-  this.chip = 0
-  this.chipBottom = 0
   // game state 1 playing 0 waiting
   this.state = 0
   // last winner
@@ -33,49 +31,89 @@ update.prototype.chooseBtn = function() {
 }
 // start 
 update.prototype.start = function() {
+	//random 庄家
+  this.chooseBtn()
+  this.nowPos = this.btn
+  console.log('bug start',this.btn,this.nowPos)
   //config
-  this.alivePlayers = this.game.players
-  let sbPos = this.nowPos + 1 >= this.game.players.length ? 0 : this.nowPos + 1
-  let bbPos = sbPos + 1 >= this.game.players.length ? 0 : sbPos + 1
+  this.alivePlayers = this.game.players.slice(0)
   //ask smallblind
-  let sb = prompt('小盲注 下多少？', 2)
-  let bb = prompt('大盲注下多少? 可以加', 2 * sb)
-  bb = bb >= 2 & sb ? bb : sb * 2
-  this.chip = bb
-  //go loop
+  let sb = prompt('小盲注 下多少？', 2) - 0
+ //cal
+  let banker = this.game.banker
+  //sb
+	this.plusPos(1)  
+  this.alivePlayers[this.nowPos].chip -= sb
+  this.alivePlayers[this.nowPos].outchip += sb
+  //bb
+  let bb = prompt('大盲注下多少? 可以加', 2 * sb) - 0
+  bb = bb >= 2 * sb ? bb : sb * 2
+	this.plusPos(1)  
+  this.alivePlayers[this.nowPos].chip -= bb
+  this.alivePlayers[this.nowPos].outchip += bb
+	//cal banker
+	banker.chip = bb
+	banker.chippool = sb + bb
 }
 //loop 
-update.prototype.loop = function() {
-  this.nowPos = this.game.players.indexOf(this.btn) || 0
+update.prototype.plusPos = function (num){
+	for(let i = 0;i<num;i++){
+		console.log(num)
+  this.nowPos = this.nowPos + 1 >= this.alivePlayers.length ? 0 :  this.nowPos+1 //++this.nowPos
+ }
+  console.log('plus',this.nowPos)
+}
+update.prototype.next = function() {
+	// 是否下一轮
   //loop 条件 isAlive banker.hand.length != 5 
   let isContinue = this.game.banker.hand.length < 5 && this.alivePlayers.length > 1
   //loop
-  while(isContinue) {
+  if(isContinue) {
     let nowPlayer = this.game.players[this.nowPos]
-    // 询问 跟 加注 放弃 同步的 需要阻塞updating
-    this.ask(nowPlayer)
-    // 下一轮
-    if(this.nowPos == this.game.players.length) {
-      this.nowPos = 0
-    } else {
-      this.nowPos++
+    // 询问 跟 加注 放弃 同步的  断开 Updating  用 desk 的事件触发下一步
+    //dom 操作 不能够完全在Model层操作了
+    // 本轮 下一个人
+    this.plusPos(1)
+    console.log('compare=>',this.nowPos,this.btn)
+    // 回到庄的位置
+    if(this.nowPos === this.btn){
+
+    	this.nextRound()
     }
-    //next
+  } else {
+    //compare hands
+    let winner = this.alivePlayers[0]
+    this.alivePlayers.reduce((o,n)=>{
+    	let nval = this.game.valid(n),
+    		oval = this.game.valid(winner)
+    	return nval[1] < oval[1] ? nval : oval
+    },winner)
+    //get winner
+    
+    this.lastWinner = winner
+    //不区分边池 全收 
+    winner.changechip(this.chipBottom)
+    this.chipBottom = 0
+    this.chip = 0
   }
-  //get winner
-  let winner = this.alivePlayers[0]
-  this.lastWinner = winner
-  //不区分边池 全收 
-  winner.changechip(this.chipBottom)
-  this.chipBottom = 0
-  this.chip = 0
 }
-// ask 
-update.prototype.ask = function(player) {
-	if(this.chip>=player.chip){
-	//没钱了 只能 all in  或者 fold
+//next round 
+update.prototype.nextRound = function () {
+	this.game.banker.addHand(1)
+	console.log('new turn')
+}
+// btn handler 
+update.prototype.follow = function(player) {
 	
-	}else{
-	// 跟 allin  fold	
-	}
 }
+update.prototype.add = function(player) {
+	let _chip = parseInt(prompt('add how many ?',0))
+	player.chip -= _chip
+	this.game.banker.chip += _chip
+	player.outchip += _chip
+	
+	this.game.banker.chippool += _chip
+	console.log('btnhandler')
+}
+
+export default update

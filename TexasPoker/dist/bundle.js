@@ -144,7 +144,7 @@ function arange (arr=['A','B','C'],num=2){
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__js_texas__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__js_desk__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__js_desk__ = __webpack_require__(8);
 
 
 
@@ -166,6 +166,13 @@ document.querySelector('.valid').addEventListener('click', () => {
 document.querySelector('.start').addEventListener('click', () => {
   Desk.start()
 })
+document.querySelector('.ans-btn').addEventListener('click', () => {
+  Desk.next()
+})
+
+document.querySelectorAll('.sel button').forEach(x=>x.addEventListener('click', (e) => {
+Desk.btnsHandler(e)
+}))
 
 /***/ }),
 /* 3 */
@@ -177,6 +184,8 @@ document.querySelector('.start').addEventListener('click', () => {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__10ChangeAlgorithem__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__valid__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__testHands__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__update__ = __webpack_require__(7);
+
 
 
 
@@ -191,17 +200,20 @@ var Texas = (function() {
   function Texas() {
     //游戏流程 1坐人 2 盲注 3 发底牌 4 大盲注  chipPool = 最大 下一个 顺时针轮 加注or aban 5. 循环 直到 全部是一样的或者 showHand 
     //6 发三张公牌 7 小盲注开始 加注 循环到一样 8 	发第四张 9 循环表态 10 发第五张 11 循环表态 12 亮牌
-		//卡池
+    //卡池
     this.cardPool = []
     //玩家
     this.players = []
     //NPC
- 		this.banker = new __WEBPACK_IMPORTED_MODULE_1__player__["a" /* default */]('Banker',this)
- 		//
+    this.banker = new __WEBPACK_IMPORTED_MODULE_1__player__["a" /* default */]('Banker', this)
+    this.banker.chip = 0
+    this.banker.chippool= 0
+    //updating loop
+    this.update = new __WEBPACK_IMPORTED_MODULE_5__update__["a" /* default */](this)
   }
   Texas.prototype = {
     init: function(isTest) {
-    	//初始化
+      //初始化
       this.cardPool = []
       //this.players = []
       this.banker.hand = []
@@ -209,26 +221,30 @@ var Texas = (function() {
         this.cardPool[i] = new __WEBPACK_IMPORTED_MODULE_0__poker__["a" /* default */](i)
       }
       //初始化玩家手牌
-       this.players.forEach(p=>p.init())
+      this.players.forEach(p => p.init())
       //测试玩家
-      if(isTest){
-      	let tp = this.players[0] || this.addPlayer()
-      	tp.hand = Object(__WEBPACK_IMPORTED_MODULE_4__testHands__["a" /* default */])(4)
-      	this.cardPool = this.cardPool.filter(x=>{
-      		let fg = true
-      		tp.hand.forEach(k=>{
-      			 fg = k.key == x.key ? false : fg 
-      		})
-      		return fg
-      	})
+      if(isTest) {
+        let tp = this.players[0] || this.addPlayer()
+        tp.hand = Object(__WEBPACK_IMPORTED_MODULE_4__testHands__["a" /* default */])(4)
+        this.cardPool = this.cardPool.filter(x => {
+          let fg = true
+          tp.hand.forEach(k => {
+            fg = k.key == x.key ? false : fg
+          })
+          return fg
+        })
       }
-     
+
     },
-    start:function () {
-    	this.init()
-    	//发牌 发公牌
-    	this.banker.addHand(3)
-    	this.players.forEach(p=>p.addHand(2))
+    start: function() {
+      this.init()
+      //发牌 发公牌
+      this.banker.addHand(3)
+      while(this.players.length < 3) {
+        this.addPlayer()
+      }
+      this.players.forEach(p => p.addHand(2))
+
     },
     dealToBank: function() {
       if(this.cardPool.length < 1) return console.log('没牌了')
@@ -236,7 +252,7 @@ var Texas = (function() {
     },
     addPlayer: function() {
       if(this.players.length > 9) return console.log('人满了大哥')
-      let p = new __WEBPACK_IMPORTED_MODULE_1__player__["a" /* default */](`Player:${this.players.length}`,this)
+      let p = new __WEBPACK_IMPORTED_MODULE_1__player__["a" /* default */](`Player:${this.players.length}`, this)
       p.init()
       this.players.push(p)
       return p
@@ -246,7 +262,7 @@ var Texas = (function() {
         return this.getHandVal(a) - this.getHandVal(b)
       })
     },
-    validHand: __WEBPACK_IMPORTED_MODULE_3__valid__["a" /* default */]
+    validHand: __WEBPACK_IMPORTED_MODULE_3__valid__["a" /* default */] // valid(player)
   }
 
   return new Texas()
@@ -261,13 +277,15 @@ var Texas = (function() {
 function Player(name,game) {
   this.el = null
   this.hand = []
-  this.chip = 0
+  this.chip = 1000
+  this.outchip = 0
   this.name = name
   this.game = game
 }
 Player.prototype = {
   init: function() {
     this.hand = []
+    this.outchip = 0
   },
   changechip: function(val) {
     this.chip += val
@@ -491,17 +509,145 @@ var makehands = (seed)=>{
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/*翻牌前（Pre-flop）：发出底牌后,公共牌出现以前的第一轮叫注阶段
+ * 翻牌（Flop）：前三张公共牌。
+ * 翻牌圈（Flop-round）：前三张公共牌出现以后的押注圈。
+ * 转牌（Turn）：第四牌公共牌
+ * 转牌圈（Turn-round）：第四张出现以后的押注圈
+ * 河牌（River）：第五张公共牌
+ * 河牌圈（River-round）:第五张出现以后的押注圈
+ * */
+
+function update(game) {
+  //model layer
+  this.game = game
+  // updating manage
+  this.nowPos = 0
+  //chip manage
+  // game state 1 playing 0 waiting
+  this.state = 0
+  // last winner
+  this.lastWinner = null
+  //alive players
+  this.alivePlayers = []
+}
+// 确定庄家，赢的当庄 或者初始 随机 
+update.prototype.chooseBtn = function() {
+  if(!this.lastWinner) {
+    //随机庄
+    this.btn = ~~(Math.random() * this.game.players.length)
+  } else if(this.players.indexOf(this.lastWinner) != -1) {
+    this.btn = this.lastWinner
+  }
+}
+// start 
+update.prototype.start = function() {
+	//random 庄家
+  this.chooseBtn()
+  this.nowPos = this.btn
+  console.log('bug start',this.btn,this.nowPos)
+  //config
+  this.alivePlayers = this.game.players.slice(0)
+  //ask smallblind
+  let sb = prompt('小盲注 下多少？', 2) - 0
+ //cal
+  let banker = this.game.banker
+  //sb
+	this.plusPos(1)  
+  this.alivePlayers[this.nowPos].chip -= sb
+  this.alivePlayers[this.nowPos].outchip += sb
+  //bb
+  let bb = prompt('大盲注下多少? 可以加', 2 * sb) - 0
+  bb = bb >= 2 * sb ? bb : sb * 2
+	this.plusPos(1)  
+  this.alivePlayers[this.nowPos].chip -= bb
+  this.alivePlayers[this.nowPos].outchip += bb
+	//cal banker
+	banker.chip = bb
+	banker.chippool = sb + bb
+}
+//loop 
+update.prototype.plusPos = function (num){
+	for(let i = 0;i<num;i++){
+		console.log(num)
+  this.nowPos = this.nowPos + 1 >= this.alivePlayers.length ? 0 :  this.nowPos+1 //++this.nowPos
+ }
+  console.log('plus',this.nowPos)
+}
+update.prototype.next = function() {
+	// 是否下一轮
+  //loop 条件 isAlive banker.hand.length != 5 
+  let isContinue = this.game.banker.hand.length < 5 && this.alivePlayers.length > 1
+  //loop
+  if(isContinue) {
+    let nowPlayer = this.game.players[this.nowPos]
+    // 询问 跟 加注 放弃 同步的  断开 Updating  用 desk 的事件触发下一步
+    //dom 操作 不能够完全在Model层操作了
+    // 本轮 下一个人
+    this.plusPos(1)
+    console.log('compare=>',this.nowPos,this.btn)
+    // 回到庄的位置
+    if(this.nowPos === this.btn){
+
+    	this.nextRound()
+    }
+  } else {
+    //compare hands
+    let winner = this.alivePlayers[0]
+    this.alivePlayers.reduce((o,n)=>{
+    	let nval = this.game.valid(n),
+    		oval = this.game.valid(winner)
+    	return nval[1] < oval[1] ? nval : oval
+    },winner)
+    //get winner
+    
+    this.lastWinner = winner
+    //不区分边池 全收 
+    winner.changechip(this.chipBottom)
+    this.chipBottom = 0
+    this.chip = 0
+  }
+}
+//next round 
+update.prototype.nextRound = function () {
+	this.game.banker.addHand(1)
+	console.log('new turn')
+}
+// btn handler 
+update.prototype.follow = function(player) {
+	
+}
+update.prototype.add = function(player) {
+	let _chip = parseInt(prompt('add how many ?',0))
+	player.chip -= _chip
+	this.game.banker.chip += _chip
+	player.outchip += _chip
+	
+	this.game.banker.chippool += _chip
+	console.log('btnhandler')
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (update);
+
+/***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 function desk(model) {
   this.model = model
   this.el = document.querySelector('.players')
   this.playerTemplate = `<div class="player">
-			<p class='name'></p>
+			<p class='name'></p><p>剩余筹码:<span	 class='chip'></span></p>
+			<p>下注筹码:<span	 class='outchip'></span></p>
 			<div class='pokers'></div>	
 			</div>`
 	this.bankerTemplate = `<div class="banker">
-			<p class='name'>庄家</p>
+			<p class='name'>庄家</p><p>池底:<span	 class='chippool'></span></p>
+			<p>当前底注:<span	 class='chip'></span></p>	
 			<div class='pokers'></div>	
 			</div>`
+	this.askTemplate = document.querySelector('.ask')
 }
 // 验证牌型 
 desk.prototype.valid = function(ip) {
@@ -511,7 +657,7 @@ desk.prototype.valid = function(ip) {
 	}
   this.model.players.forEach(p => console.log(this.model.validHand(p)))
 }
-//初始化   mvc 
+//初始化   控制器 这就是   model -> dom html  
 desk.prototype.init = function(isTest) {
   this.el.innerHTML = ''
   this.model.init(isTest)
@@ -528,17 +674,15 @@ desk.prototype.deal = function(){
 	this.model.dealToBank()
 	this.renderAll()
 }
-//start
-desk.prototype.start = function(){
-	this.model.start()
-	this.renderAll()
-}
+
 //render banker 
 desk.prototype.renderBanker = function(){
 	let obj = this.model.banker
 	 let dom = obj.el || document.createElement('div')
   dom.innerHTML = this.bankerTemplate
   dom.querySelector('.name').innerText = obj.name
+  dom.querySelector('.chippool').innerText = obj.chippool
+  dom.querySelector('.chip').innerText = obj.chip
   obj.hand.sort((a, b) => a.key - b.key)
   obj.hand.forEach((p) => {
     let card = document.createElement('span')
@@ -554,6 +698,9 @@ desk.prototype.renderOne = function(obj) {
   let dom = obj.el || document.createElement('div')
   dom.innerHTML = this.playerTemplate
   dom.querySelector('.name').innerText = obj.name
+  dom.querySelector('.chip').innerText = obj.chip
+  dom.querySelector('.outchip').innerText = obj.outchip
+  
   obj.hand.sort((a, b) => a.key - b.key)
   obj.hand.forEach((p) => {
     let card = document.createElement('span')
@@ -566,11 +713,48 @@ desk.prototype.renderOne = function(obj) {
 }
 // 渲染全部玩家的 dom 包括庄
 desk.prototype.renderAll = function() {
-  this.renderBanker(	)
+  this.renderBanker()
   this.model.players.map((player) => {
     this.renderOne(player)
     this.el.appendChild(player.el)
   })
+}
+//start
+desk.prototype.start = function(){
+	//创建玩家
+	this.model.start()
+	this.renderBanker()
+	//游戏开始
+  this.model.update.start()
+  this.renderAll()
+	this.next()
+}
+desk.prototype.showAsk = function(nowdom){
+	console.log('desk ask')
+	let dom = this.askTemplate
+	nowdom.appendChild(dom)
+}
+desk.prototype.next = function (e){
+	this.model.update.next()
+	let ps = this.model.update.alivePlayers
+	let nowPos = this.model.update.nowPos
+	let npdom = ps[nowPos].el
+	ps.forEach(p=>p.el.style.border = '')
+	npdom.style.border = '2px solid black'
+  this.renderAll()
+	this.showAsk(npdom)
+  
+}
+//btns handlers
+desk.prototype.btnsHandler = function(e){
+	let method = e.target.getAttribute('class').split('_')[1]
+	let pos = this.model.update.nowPos
+	let player = this.model.update.alivePlayers[pos]
+	if(method){
+		this.model.update[method] && this.model.update[method](player)
+		this.renderAll()
+		this.next()
+	}
 }
 /* harmony default export */ __webpack_exports__["a"] = (desk);
 

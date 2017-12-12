@@ -11,6 +11,15 @@
 			border: 1px solid #C4C4C4;
 			background: #C0CCDA;
 		}
+		.ask{
+			border:1px solid black;
+			border-radius: 5px;
+			width: 300px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+		.ask input{display: none;}
 	</style>
 
 	<body>
@@ -32,9 +41,12 @@
 			<div class="sel">
 				<button class="sel-btn_follow">跟</button>
 				<button class="sel-btn_add">加注</button>
-				<div class="sel-add_slide">
-					<input type="number" min="0" step="10"/>
-				</div>
+				<button class="sel-btn_allin">allin</button>
+				<button class="sel-btn_fold">盖牌</button>
+			</div>
+			<div class="ans">
+				<p class="ans-msg">你的选择是：</p>
+				<button class="ans-btn">确认</button>
 			</div>
 		</div>
 	</body>

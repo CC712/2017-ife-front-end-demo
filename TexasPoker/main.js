@@ -19,3 +19,10 @@ document.querySelector('.valid').addEventListener('click', () => {
 document.querySelector('.start').addEventListener('click', () => {
   Desk.start()
 })
+document.querySelector('.ans-btn').addEventListener('click', () => {
+  Desk.next()
+})
+
+document.querySelectorAll('.sel button').forEach(x=>x.addEventListener('click', (e) => {
+Desk.btnsHandler(e)
+}))

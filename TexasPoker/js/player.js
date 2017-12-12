@@ -1,13 +1,15 @@
 function Player(name,game) {
   this.el = null
   this.hand = []
-  this.chip = 0
+  this.chip = 1000
+  this.outchip = 0
   this.name = name
   this.game = game
 }
 Player.prototype = {
   init: function() {
     this.hand = []
+    this.outchip = 0
   },
   changechip: function(val) {
     this.chip += val
