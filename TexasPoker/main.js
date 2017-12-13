@@ -19,6 +19,9 @@ document.querySelector('.valid').addEventListener('click', () => {
 document.querySelector('.start').addEventListener('click', () => {
   Desk.start()
 })
+document.querySelector('.continue').addEventListener('click', () => {
+  Desk.start()
+})
 document.querySelector('.ans-btn').addEventListener('click', () => {
   Desk.next()
 })

@@ -5,6 +5,8 @@ function desk(model) {
 			<p class='name'></p><p>剩余筹码:<span	 class='chip'></span></p>
 			<p>下注筹码:<span	 class='outchip'></span></p>
 			<div class='pokers'></div>	
+			<p>当前牌型:<span	 class='poker-val'></span></p>	
+			
 			</div>`
 	this.bankerTemplate = `<div class="banker">
 			<p class='name'>庄家</p><p>池底:<span	 class='chippool'></span></p>
@@ -57,13 +59,15 @@ desk.prototype.renderBanker = function(){
   obj.el = dom
   document.querySelector('.banker').appendChild(obj.el)
 }
-// 渲染 一个玩家的Dom
+// 渲染 or增加一个玩家的Dom
 desk.prototype.renderOne = function(obj) {
   let dom = obj.el || document.createElement('div')
   dom.innerHTML = this.playerTemplate
   dom.querySelector('.name').innerText = obj.name
   dom.querySelector('.chip').innerText = obj.chip
   dom.querySelector('.outchip').innerText = obj.outchip
+  obj.pokerVal = this.model.validHand(obj)
+  dom.querySelector('.poker-val').innerText = obj.pokerVal[2]+'=》'+obj.pokerVal[1]
   
   obj.hand.sort((a, b) => a.key - b.key)
   obj.hand.forEach((p) => {
@@ -78,7 +82,7 @@ desk.prototype.renderOne = function(obj) {
 // 渲染全部玩家的 dom 包括庄
 desk.prototype.renderAll = function() {
   this.renderBanker()
-  this.model.players.map((player) => {
+  this.model.update.alivePlayers.map((player) => {
     this.renderOne(player)
     this.el.appendChild(player.el)
   })
@@ -97,6 +101,7 @@ desk.prototype.showAsk = function(nowdom){
 	console.log('desk ask')
 	let dom = this.askTemplate
 	nowdom.appendChild(dom)
+	dom.style.display = 'flex'
 }
 desk.prototype.next = function (e){
 	this.model.update.next()
@@ -116,8 +121,16 @@ desk.prototype.btnsHandler = function(e){
 	let player = this.model.update.alivePlayers[pos]
 	if(method){
 		this.model.update[method] && this.model.update[method](player)
+		if(this.model.update.nowPos === this.model.update.btn){
+    	this.model.update.nextRound()
+    }
+		if(method == 'fold'){
+			player.el.querySelector('.pokers').className += ' folded'
+		}
 		this.renderAll()
 		this.next()
+		// 回到庄的位置
+    
 	}
 }
 export default desk

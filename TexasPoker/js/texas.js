@@ -57,7 +57,6 @@ var Texas = (function() {
         this.addPlayer()
       }
       this.players.forEach(p => p.addHand(2))
-
     },
     dealToBank: function() {
       if(this.cardPool.length < 1) return console.log('没牌了')

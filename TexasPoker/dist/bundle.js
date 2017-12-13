@@ -166,6 +166,9 @@ document.querySelector('.valid').addEventListener('click', () => {
 document.querySelector('.start').addEventListener('click', () => {
   Desk.start()
 })
+document.querySelector('.continue').addEventListener('click', () => {
+  Desk.start()
+})
 document.querySelector('.ans-btn').addEventListener('click', () => {
   Desk.next()
 })
@@ -244,7 +247,6 @@ var Texas = (function() {
         this.addPlayer()
       }
       this.players.forEach(p => p.addHand(2))
-
     },
     dealToBank: function() {
       if(this.cardPool.length < 1) return console.log('没牌了')
@@ -455,13 +457,13 @@ function valid(player) {
       
       //判断层级
 		let methods = [isSF,isFour,isFlush,isStraight,isHuLu,isThreeKind,isTwoPair,isOnePair,isNormal]
-		
+		let translate2cn = ['同花顺','四张','同花','顺子','葫芦','三张','两对','一对','高牌']
 		let i = 0, ans = false
 		while(i<methods.length && !ans){
 			let m = methods[i]
 			
-			if(m(hand)) ans = [m(hand),i]
-			console.log(m.name,'==>',ans)
+			if(m(hand)) ans = [m(hand),i,translate2cn[i]]
+//			console.log(m.name,'==>',ans)
 			i++
 		}
 		return ans
@@ -525,7 +527,7 @@ function update(game) {
   this.nowPos = 0
   //chip manage
   // game state 1 playing 0 waiting
-  this.state = 0
+  this.state = 1
   // last winner
   this.lastWinner = null
   //alive players
@@ -533,12 +535,13 @@ function update(game) {
 }
 // 确定庄家，赢的当庄 或者初始 随机 
 update.prototype.chooseBtn = function() {
-  if(!this.lastWinner) {
+  if(this.lastWinner && this.game.players.indexOf(this.lastWinner) != -1) {
+    this.btn = this.game.players.indexOf(this.lastWinner)
+  }
+  else {
     //随机庄
     this.btn = ~~(Math.random() * this.game.players.length)
-  } else if(this.players.indexOf(this.lastWinner) != -1) {
-    this.btn = this.lastWinner
-  }
+  } 
 }
 // start 
 update.prototype.start = function() {
@@ -554,6 +557,7 @@ update.prototype.start = function() {
   let banker = this.game.banker
   //sb
 	this.plusPos(1)  
+	console.log(this.nowPos,this.alivePlayers)
   this.alivePlayers[this.nowPos].chip -= sb
   this.alivePlayers[this.nowPos].outchip += sb
   //bb
@@ -568,44 +572,40 @@ update.prototype.start = function() {
 }
 //loop 
 update.prototype.plusPos = function (num){
-	for(let i = 0;i<num;i++){
-		console.log(num)
+	for(let i = 0;i<num;i++)
   this.nowPos = this.nowPos + 1 >= this.alivePlayers.length ? 0 :  this.nowPos+1 //++this.nowPos
- }
-  console.log('plus',this.nowPos)
 }
 update.prototype.next = function() {
 	// 是否下一轮
   //loop 条件 isAlive banker.hand.length != 5 
-  let isContinue = this.game.banker.hand.length < 5 && this.alivePlayers.length > 1
+  let isContinue = this.game.banker.hand.length < 5 && this.alivePlayers.length > 0
   //loop
   if(isContinue) {
     let nowPlayer = this.game.players[this.nowPos]
-    // 询问 跟 加注 放弃 同步的  断开 Updating  用 desk 的事件触发下一步
-    //dom 操作 不能够完全在Model层操作了
     // 本轮 下一个人
     this.plusPos(1)
     console.log('compare=>',this.nowPos,this.btn)
-    // 回到庄的位置
-    if(this.nowPos === this.btn){
-
-    	this.nextRound()
-    }
+    
   } else {
     //compare hands
     let winner = this.alivePlayers[0]
-    this.alivePlayers.reduce((o,n)=>{
-    	let nval = this.game.valid(n),
-    		oval = this.game.valid(winner)
-    	return nval[1] < oval[1] ? nval : oval
+    winner =  this.alivePlayers.reduce((o,n)=>{
+    	let nval = this.game.validHand(n),
+    		oval = this.game.validHand(o)
+    	return nval[1] < oval[1] ? o : n
     },winner)
     //get winner
     
     this.lastWinner = winner
     //不区分边池 全收 
-    winner.changechip(this.chipBottom)
-    this.chipBottom = 0
-    this.chip = 0
+    winner.changechip(this.game.banker.chippool)
+    this.game.banker.chippool = 0
+    this.game.banker.chip = 0
+    this.game.players.forEach(p=>p.init())
+    //提示冠军
+    alert('winner is '+winner.name)
+    //重开局 
+    this.state = 0
   }
 }
 //next round 
@@ -615,7 +615,13 @@ update.prototype.nextRound = function () {
 }
 // btn handler 
 update.prototype.follow = function(player) {
+
+	let _chip = this.game.banker.chip 
+	player.chip -= _chip
+	player.outchip += _chip
 	
+	this.game.banker.chippool += _chip
+	console.log(player.name,'fol')
 }
 update.prototype.add = function(player) {
 	let _chip = parseInt(prompt('add how many ?',0))
@@ -626,7 +632,12 @@ update.prototype.add = function(player) {
 	this.game.banker.chippool += _chip
 	console.log('btnhandler')
 }
-
+update.prototype.fold = function(player){
+	let index = this.alivePlayers.indexOf(player)
+	this.alivePlayers.splice(index,1)
+	this.nowPos = this.alivePlayers[this.nowPos] ? --this.nowPos : this.nowPos 
+	console.log('folded',this.nowPos,this.alivePlayers.length)
+}
 /* harmony default export */ __webpack_exports__["a"] = (update);
 
 /***/ }),
@@ -641,6 +652,8 @@ function desk(model) {
 			<p class='name'></p><p>剩余筹码:<span	 class='chip'></span></p>
 			<p>下注筹码:<span	 class='outchip'></span></p>
 			<div class='pokers'></div>	
+			<p>当前牌型:<span	 class='poker-val'></span></p>	
+			
 			</div>`
 	this.bankerTemplate = `<div class="banker">
 			<p class='name'>庄家</p><p>池底:<span	 class='chippool'></span></p>
@@ -693,13 +706,15 @@ desk.prototype.renderBanker = function(){
   obj.el = dom
   document.querySelector('.banker').appendChild(obj.el)
 }
-// 渲染 一个玩家的Dom
+// 渲染 or增加一个玩家的Dom
 desk.prototype.renderOne = function(obj) {
   let dom = obj.el || document.createElement('div')
   dom.innerHTML = this.playerTemplate
   dom.querySelector('.name').innerText = obj.name
   dom.querySelector('.chip').innerText = obj.chip
   dom.querySelector('.outchip').innerText = obj.outchip
+  obj.pokerVal = this.model.validHand(obj)
+  dom.querySelector('.poker-val').innerText = obj.pokerVal[2]+'=》'+obj.pokerVal[1]
   
   obj.hand.sort((a, b) => a.key - b.key)
   obj.hand.forEach((p) => {
@@ -714,7 +729,7 @@ desk.prototype.renderOne = function(obj) {
 // 渲染全部玩家的 dom 包括庄
 desk.prototype.renderAll = function() {
   this.renderBanker()
-  this.model.players.map((player) => {
+  this.model.update.alivePlayers.map((player) => {
     this.renderOne(player)
     this.el.appendChild(player.el)
   })
@@ -733,6 +748,7 @@ desk.prototype.showAsk = function(nowdom){
 	console.log('desk ask')
 	let dom = this.askTemplate
 	nowdom.appendChild(dom)
+	dom.style.display = 'flex'
 }
 desk.prototype.next = function (e){
 	this.model.update.next()
@@ -752,8 +768,16 @@ desk.prototype.btnsHandler = function(e){
 	let player = this.model.update.alivePlayers[pos]
 	if(method){
 		this.model.update[method] && this.model.update[method](player)
+		if(this.model.update.nowPos === this.model.update.btn){
+    	this.model.update.nextRound()
+    }
+		if(method == 'fold'){
+			player.el.querySelector('.pokers').className += ' folded'
+		}
 		this.renderAll()
 		this.next()
+		// 回到庄的位置
+    
 	}
 }
 /* harmony default export */ __webpack_exports__["a"] = (desk);

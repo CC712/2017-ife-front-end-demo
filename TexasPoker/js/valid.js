@@ -146,13 +146,13 @@ export default function valid(player) {
       
       //判断层级
 		let methods = [isSF,isFour,isFlush,isStraight,isHuLu,isThreeKind,isTwoPair,isOnePair,isNormal]
-		
+		let translate2cn = ['同花顺','四张','同花','顺子','葫芦','三张','两对','一对','高牌']
 		let i = 0, ans = false
 		while(i<methods.length && !ans){
 			let m = methods[i]
 			
-			if(m(hand)) ans = [m(hand),i]
-			console.log(m.name,'==>',ans)
+			if(m(hand)) ans = [m(hand),i,translate2cn[i]]
+//			console.log(m.name,'==>',ans)
 			i++
 		}
 		return ans
