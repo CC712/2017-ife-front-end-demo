@@ -11,3 +11,4 @@
       val:this.val
     }
   }
+  export default Poker
