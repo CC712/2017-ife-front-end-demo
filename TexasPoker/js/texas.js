@@ -3,16 +3,10 @@ import Player from './player'
 import arange from './10ChangeAlgorithem'
 import valid from './valid'
 import makehand from './testHands'
-import update from './update'
 var Texas = (function() {
-  //0 -52   A K Q J 10 9 8 7 6 5 4 3 2    0%13= 52/4 = 13=>2  42/4 = 10 => 4 
-  // TYPE   0 % 4 = 0黑桃 1红桃 2梅花3方片 
-  // 底牌2 张 公共 5 张 选5张 组合
   //封装
   //游戏主函数
   function Texas() {
-    //游戏流程 1坐人 2 盲注 3 发底牌 4 大盲注  chipPool = 最大 下一个 顺时针轮 加注or aban 5. 循环 直到 全部是一样的或者 showHand 
-    //6 发三张公牌 7 小盲注开始 加注 循环到一样 8 	发第四张 9 循环表态 10 发第五张 11 循环表态 12 亮牌
     //卡池
     this.cardPool = []
     //玩家
@@ -20,9 +14,23 @@ var Texas = (function() {
     //NPC
     this.banker = new Player('Banker', this)
     this.banker.chip = 0
-    this.banker.chippool= 0
+    this.banker.chippool = 0
     //updating loop
-    this.update = new update(this)
+    //观察者模式的池
+    this.playersObservers = []
+    this.bankerObservers = []
+    this.stateObservers = []
+    this.askObservers = []
+    // state 0 waiting 1 playing
+    this.state = 0
+    this.stateMap = ['start', 'turn', 'deal']
+    //session 
+    this.aBlindChip = 4
+    this.btn = 0
+    this.sb = 0
+    this.bb = 0
+    this.pos = undefined
+    //obs
   }
   Texas.prototype = {
     init: function(isTest) {
@@ -30,6 +38,9 @@ var Texas = (function() {
       this.cardPool = []
       //this.players = []
       this.banker.hand = []
+      this.pos = undefined
+      this.sb = undefined
+      this.bb = undefined
       for(let i = 0; i < 52; i++) {
         this.cardPool[i] = new Poker(i)
       }
@@ -47,20 +58,65 @@ var Texas = (function() {
           return fg
         })
       }
-
+      //notify
+      this.notifyBankerObs()
     },
     start: function() {
       this.init()
-      //发牌 发公牌
-      this.banker.addHand(3)
-      while(this.players.length < 3) {
+      // 加入玩家
+      while(this.players.length < 5) {
         this.addPlayer()
       }
-      this.players.forEach(p => p.addHand(2))
+      //发公牌
+      this.banker.addHand(3)
+      this.players.forEach(p => {
+      	p.addHand(2)
+      	p.state = 1
+      })
+      //盲注
+      this.btn = ~~(Math.random() * this.players.length)
+      this.sb = this.plusPos(1)
+      this.players[this.pos].changeChip(-2)
+      this.bb = this.plusPos(1)
+      this.players[this.pos].changeChip(-4)
+      this.plusPos(1)
+      this.state++
+      this.update()
+      
     },
+    //chip
+    turn: function(p) {
+      console.log(this.pos, '<===> player :', p)
+      this.plusPos(1)
+      console.log(this.players, this.pos)
+      this.notifyAskObs(this.players[this.pos])
+      
+      if(this.pos == this.btn && p.state == 0) {
+      	this.pos = this.btn
+      	this.state++
+      }
+      p.state = 0
+    },
+    //state deal
+    deal: function() {
+      this.dealToBank()
+      this.state = 1
+      this.players.forEach(p=>{
+      	if(p.state != 2 ) p.state = 0
+      })
+    },
+    end : function () {
+    	
+    },
+    update: function(arg) {
+     console.log(arg,this.state,this[this.stateMap[this.state]],'after update')
+    	this[this.stateMap[this.state]](arg)
+    },
+    //
     dealToBank: function() {
       if(this.cardPool.length < 1) return console.log('没牌了')
       this.banker.addHand(1)
+      this.notifyBankerObs()
     },
     addPlayer: function() {
       if(this.players.length > 9) return console.log('人满了大哥')
@@ -75,8 +131,59 @@ var Texas = (function() {
       })
     },
     validHand: valid // valid(player)
+      ,
+    // 可以用策略模式精简一下才对 先放着 先实现先
+    regPlayerObs: function(fnbind) {
+      this.playersObservers.push(fnbind)
+    },
+    regBankerObs: function(fnbind) {
+      this.bankerObservers.push(fnbind)
+    },
+    notifyPlayersObs: function(arg) {
+      this.playersObservers.forEach(f => f(arg))
+    },
+    notifyBankerObs: function() {
+      this.bankerObservers.forEach(f => f())
+    },
+    regAskObs: function(fnbind) {
+      this.askObservers.push(fnbind)
+    },
+    notifyAskObs: function(arg) {
+      this.askObservers.forEach(f => f(arg))
+    },
+    //btnhandler
+    //adapter for drop chips
+    dropChip: function(p, num) {
+      num = parseInt(num)
+      p.outChip += num
+      p.changeChip(0 - num)
+      this.banker.chippool += num
+    },
+    btn_follow: function(p) {
+      let _chip = this.banker.chip
+      this.dropChip(p, _chip)
+    },
+    btn_add: function(p) {
+      //一个大盲
+      this.dropChip(p, this.aBlindChip)
+    },
+    btn_allin: function(p) {
+      this.dropChip(p, p.chip)
+    },
+    btn_fold: function(p) {
+      //fold and dead
+      this.state = 2
+    },
+    //util
+    plusPos: function(num) {
+      let pos = this.pos != undefined ? this.pos : this.btn
+      pos = parseInt(pos)
+      for(let i = 0; i < num; i++)
+        pos = pos + 1 == this.players.length ? 0 : pos + 1
+      this.pos = pos
+      return pos
+    }
   }
-
   return new Texas()
 })()
 export default Texas

@@ -7,13 +7,13 @@
  * 河牌圈（River-round）:第五张出现以后的押注圈
  * */
 
-function update(game) {
+function state(model) {
   //model layer
-  this.game = game
+  this.model = model
   // updating manage
   this.nowPos = 0
   //chip manage
-  // game state 1 playing 0 waiting
+  // model state 1 playing 0 waiting
   this.state = 1
   // last winner
   this.lastWinner = null
@@ -21,27 +21,27 @@ function update(game) {
   this.alivePlayers = []
 }
 // 确定庄家，赢的当庄 或者初始 随机 
-update.prototype.chooseBtn = function() {
-  if(this.lastWinner && this.game.players.indexOf(this.lastWinner) != -1) {
-    this.btn = this.game.players.indexOf(this.lastWinner)
+state.prototype.chooseBtn = function() {
+  if(this.lastWinner && this.model.players.indexOf(this.lastWinner) != -1) {
+    this.btn = this.model.players.indexOf(this.lastWinner)
   }
   else {
     //随机庄
-    this.btn = ~~(Math.random() * this.game.players.length)
+    this.btn = ~~(Math.random() * this.model.players.length)
   } 
 }
 // start 
-update.prototype.start = function() {
+state.prototype.start = function() {
 	//random 庄家
   this.chooseBtn()
   this.nowPos = this.btn
   console.log('bug start',this.btn,this.nowPos)
   //config
-  this.alivePlayers = this.game.players.slice(0)
+  this.alivePlayers = this.model.players.slice(0)
   //ask smallblind
   let sb = prompt('小盲注 下多少？', 2) - 0
  //cal
-  let banker = this.game.banker
+  let banker = this.model.banker
   //sb
 	this.plusPos(1)  
 	console.log(this.nowPos,this.alivePlayers)
@@ -58,17 +58,17 @@ update.prototype.start = function() {
 	banker.chippool = sb + bb
 }
 //loop 
-update.prototype.plusPos = function (num){
+state.prototype.plusPos = function (num){
 	for(let i = 0;i<num;i++)
   this.nowPos = this.nowPos + 1 >= this.alivePlayers.length ? 0 :  this.nowPos+1 //++this.nowPos
 }
-update.prototype.next = function() {
+state.prototype.next = function() {
 	// 是否下一轮
   //loop 条件 isAlive banker.hand.length != 5 
-  let isContinue = this.game.banker.hand.length < 5 && this.alivePlayers.length > 0
+  let isContinue = this.model.banker.hand.length < 5 && this.alivePlayers.length > 0
   //loop
   if(isContinue) {
-    let nowPlayer = this.game.players[this.nowPos]
+    let nowPlayer = this.model.players[this.nowPos]
     // 本轮 下一个人
     this.plusPos(1)
     console.log('compare=>',this.nowPos,this.btn)
@@ -77,18 +77,18 @@ update.prototype.next = function() {
     //compare hands
     let winner = this.alivePlayers[0]
     winner =  this.alivePlayers.reduce((o,n)=>{
-    	let nval = this.game.validHand(n),
-    		oval = this.game.validHand(o)
+    	let nval = this.model.validHand(n),
+    		oval = this.model.validHand(o)
     	return nval[1] < oval[1] ? o : n
     },winner)
     //get winner
     
     this.lastWinner = winner
     //不区分边池 全收 
-    winner.changechip(this.game.banker.chippool)
-    this.game.banker.chippool = 0
-    this.game.banker.chip = 0
-    this.game.players.forEach(p=>p.init())
+    winner.changechip(this.model.banker.chippool)
+    this.model.banker.chippool = 0
+    this.model.banker.chip = 0
+    this.model.players.forEach(p=>p.init())
     //提示冠军
     alert('winner is '+winner.name)
     //重开局 
@@ -96,33 +96,33 @@ update.prototype.next = function() {
   }
 }
 //next round 
-update.prototype.nextRound = function () {
-	this.game.banker.addHand(1)
+state.prototype.nextRound = function () {
+	this.model.banker.addHand(1)
 	console.log('new turn')
 }
 // btn handler 
-update.prototype.follow = function(player) {
+state.prototype.follow = function(player) {
 
-	let _chip = this.game.banker.chip 
+	let _chip = this.model.banker.chip 
 	player.chip -= _chip
 	player.outchip += _chip
 	
-	this.game.banker.chippool += _chip
+	this.model.banker.chippool += _chip
 	console.log(player.name,'fol')
 }
-update.prototype.add = function(player) {
+state.prototype.add = function(player) {
 	let _chip = parseInt(prompt('add how many ?',0))
 	player.chip -= _chip
-	this.game.banker.chip += _chip
+	this.model.banker.chip += _chip
 	player.outchip += _chip
 	
-	this.game.banker.chippool += _chip
+	this.model.banker.chippool += _chip
 	console.log('btnhandler')
 }
-update.prototype.fold = function(player){
+state.prototype.fold = function(player){
 	let index = this.alivePlayers.indexOf(player)
 	this.alivePlayers.splice(index,1)
 	this.nowPos = this.alivePlayers[this.nowPos] ? --this.nowPos : this.nowPos 
 	console.log('folded',this.nowPos,this.alivePlayers.length)
 }
-export default update
+export default state

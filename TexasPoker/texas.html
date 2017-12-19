@@ -24,7 +24,6 @@
 
 	<body>
 		<button class='addPlayer'>增加玩家</button>
-		<button class="dealAll">发牌</button>
 		<button class="init">重置</button>
 		<button class="valid">验证牌型</button>
 		<button class="start">开始游戏</button>
@@ -40,10 +39,10 @@
 				<p>提示</p>
 			</div>
 			<div class="sel">
-				<button class="sel-btn_follow">跟</button>
-				<button class="sel-btn_add">加注</button>
-				<button class="sel-btn_allin">allin</button>
-				<button class="sel-btn_fold">盖牌</button>
+				<button data-btn = 'follow' class="sel-btn_follow">跟</button>
+				<button  data-btn = 'add' class="sel-btn_add">加注</button>
+				<button  data-btn = 'allin' class="sel-btn_allin">allin</button>
+				<button  data-btn = 'fold' class="sel-btn_fold">盖牌</button>
 			</div>
 			<div class="ans">
 				<p class="ans-msg">你的选择是：</p>
