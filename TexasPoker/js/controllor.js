@@ -33,10 +33,10 @@ Controllor.prototype.start = function(){
 Controllor.prototype.btnsHandler = function(e){
 	let target = e.target
 	let method = target.getAttribute('data-btn')
-	let p = this.model.players[this.model.pos]
-	this.model['btn_'+method](p)
+console.log('btn press','===',this.model.pos)
+this.model['btn_'+method]()
 	console.log('可以往下了')
-	this.model.update(p)
+	this.model.update()
 }
 
 export default Controllor

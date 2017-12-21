@@ -5,8 +5,8 @@ function Player(name,model) {
   this.outChip = 0
   this.name = name
   this.model = model
-  // 0 waiting 1 isTurn 2 dead 3 watching
-  this.state = 0
+  // 0 moved 1 willmove 2 dead 3 watching
+  this.state = 3
 }
 Player.prototype = {
   init: function() {
@@ -16,6 +16,7 @@ Player.prototype = {
   // 这个是外挂接口
   changeChip: function(val) {
     this.chip += val
+    this.state = 0
     this.model.notifyPlayersObs(this)
   },
   addHand: function(number) {

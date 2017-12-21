@@ -21,6 +21,7 @@ function view(model, controllor) {
 }
 view.prototype = {
 	init : function() {
+
   let playerPart = this.el
   
   playerPart.querySelector('.addPlayer').addEventListener('click', () => {
@@ -90,14 +91,16 @@ view.prototype = {
       this.el.querySelector('.players').appendChild(player.el)
     })
   },
-  renderAsk: function(player,bool) {
-    console.log('Controllor ask')
-    let dom = this.askTemplate
-		    
+  renderAsk: function() {
+  	let player = arguments[0],
+  	bool = arguments[1]
+    console.log('Controllor ask',player,bool)
+    let dom = this.askTemplate || document.querySelector('.ask')
     player.el.appendChild(dom)
-    debugger
     if(bool !== false){
     dom.style.display = 'flex'
+    }else{
+    	dom.style.display = 'none'
     }
   },
   
