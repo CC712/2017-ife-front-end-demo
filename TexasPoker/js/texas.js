@@ -36,8 +36,10 @@ var Texas = (function() {
       init: function(isTest) {
         //初始化
         this.cardPool = []
+        this.state = 0
         //this.players = []
-        this.banker.hand = []
+        this.banker.init()
+        this.banker.chippool = 0
         this.pos = undefined
         this.sb = undefined
         this.bb = undefined
@@ -89,11 +91,14 @@ var Texas = (function() {
       turn: function() {
         this.plusPos(1)
         //aliveplayers not enough
-        let alivePlayerNum = this.players.filter(p=>p.state==1||p.state==0).length
-        if(alivePlayerNum == 1){
-        	this.state == 3
+        let alivePlayers = this.players.filter(p=>p.state==1||p.state==0)
+        console.log('alivenum',alivePlayers.length)
+        if(alivePlayers.length == 1){
+        	this.state = 3
+        	debugger
+        	alivePlayers[0].state = 0
         	this.update()
-        	return false
+        	return 
         }
         //2 at less alive 
         let lastp = this.pos
@@ -140,13 +145,17 @@ var Texas = (function() {
 			console.log('hello end')
 			 // hide ask
           this.notifyAskObs(this.players[this.btn], false)
-       //chip
+       
+       //winner
       let alivePlayers = this.players.filter(p=>p.state==0)
       let winner = this.players.reduce((o,n)=>{
-      	if(n.pokerVal<n.pokerVal )return n
+      	if(n.pokerVal[1]<n.pokerVal[1] )return n
       	else return o
       },alivePlayers[0])
       console.log(winner.name,'<==winner')
+      //chip 
+      winner.changeChip(this.banker.chippool)
+      this.init()
     },
     update: function() {
     	
@@ -207,6 +216,8 @@ var Texas = (function() {
       p.outChip += num
       p.changeChip(0 - num)
       this.banker.chippool += num
+      console.log('now chippool',this.banker.chippool)
+      this.notifyBankerObs()
     },
     btn_follow: function() {
       let _chip = this.banker.chip

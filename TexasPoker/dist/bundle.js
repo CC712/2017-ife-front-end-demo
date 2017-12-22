@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -68,9 +68,83 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+  function Poker(key) {
+    this.key = key
+    this.cardFace = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2']
+    this.typeFace = ['♠', '♥', '♣', '♦']
+    this.val = Number.parseInt(this.key / 4)
+    this.type = this.key % 4
+    return {
+      cardFace: `${this.typeFace[this.type]} ${this.cardFace[this.val]}`,
+      key: this.key,
+      type:this.type,
+      val:this.val
+    }
+  }
+  /* harmony default export */ __webpack_exports__["a"] = (Poker);
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/*  不重复的 m 个元素 选 n 个 
+*	[a,b,c] 选 2    以数组对应的下标  的值作为 是否选择的标记   [1,0,1] => ac
+*	110000  => 101000 => 100100 => 100010 => 100001
+*	可见规律，寻找第一个 10 然后交换成 01    就是1向右移动 移到头 然后移第二个
+*	
+*/	
+function arange (arr=['A','B','C'],num=2){
+	let s = []
+	let re = []
+	
+	
+	
+	
+	for(let i =0;i<arr.length-num+1;i++){
+		//移动首位
+		for(let sl = 0;sl<arr.length;sl++){
+		if(sl<num+i && sl>=i) s[sl]=1
+		else s[sl]=0
+		}
+	re.push(s.join(''))
+		for(let k =i+1;k<arr.length;k++){
+			//查找 10
+			if(s[k]==0 && s[k -1] ==1){
+				//交换
+				let t = s[k]
+				s[k] = s[k-1]
+				s[k - 1] = t
+					re.push(s.join(''))
+			} 
+				
+		}
+			if(s[i]==0 && s[i -1] ==1){
+				//交换
+				let t = s[i]
+				s[i] = s[i-1]
+				s[i - 1] = t
+					re.push(s.join(''))
+			} 
+	}
+	return re.reduce((o,str)=>{
+		//console.log(str)
+		o.push(arr.filter((x,i)=>{
+			//console.log(str.slice(i,i+1))
+			return str.slice(i,i+1)!= 0}))
+			return o
+	},[])
+}
+/* unused harmony default export */ var _unused_webpack_default_export = (arange);
+
+/***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__js_texas__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__js_Controllor__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__js_texas__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__js_Controllor__ = __webpack_require__(8);
 
 
 
@@ -80,15 +154,15 @@ var Controllor = new __WEBPACK_IMPORTED_MODULE_1__js_Controllor__["a" /* default
 Controllor.init()
 
 /***/ }),
-/* 1 */
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__poker__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__player__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__10ChangeAlgorithem__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__valid__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__testHands__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__poker__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__player__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__10ChangeAlgorithem__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__valid__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__testHands__ = __webpack_require__(6);
 
 
 
@@ -127,8 +201,10 @@ var Texas = (function() {
       init: function(isTest) {
         //初始化
         this.cardPool = []
+        this.state = 0
         //this.players = []
-        this.banker.hand = []
+        this.banker.init()
+        this.banker.chippool = 0
         this.pos = undefined
         this.sb = undefined
         this.bb = undefined
@@ -180,11 +256,14 @@ var Texas = (function() {
       turn: function() {
         this.plusPos(1)
         //aliveplayers not enough
-        let alivePlayerNum = this.players.filter(p=>p.state==1||p.state==0).length
-        if(alivePlayerNum == 1){
-        	this.state == 3
+        let alivePlayers = this.players.filter(p=>p.state==1||p.state==0)
+        console.log('alivenum',alivePlayers.length)
+        if(alivePlayers.length == 1){
+        	this.state = 3
+        	debugger
+        	alivePlayers[0].state = 0
         	this.update()
-        	return false
+        	return 
         }
         //2 at less alive 
         let lastp = this.pos
@@ -231,13 +310,17 @@ var Texas = (function() {
 			console.log('hello end')
 			 // hide ask
           this.notifyAskObs(this.players[this.btn], false)
-       //chip
+       
+       //winner
       let alivePlayers = this.players.filter(p=>p.state==0)
       let winner = this.players.reduce((o,n)=>{
-      	if(n.pokerVal<n.pokerVal )return n
+      	if(n.pokerVal[1]<n.pokerVal[1] )return n
       	else return o
       },alivePlayers[0])
       console.log(winner.name,'<==winner')
+      //chip 
+      winner.changeChip(this.banker.chippool)
+      this.init()
     },
     update: function() {
     	
@@ -298,6 +381,8 @@ var Texas = (function() {
       p.outChip += num
       p.changeChip(0 - num)
       this.banker.chippool += num
+      console.log('now chippool',this.banker.chippool)
+      this.notifyBankerObs()
     },
     btn_follow: function() {
       let _chip = this.banker.chip
@@ -330,244 +415,7 @@ return new Texas()
 /* harmony default export */ __webpack_exports__["a"] = (Texas);
 
 /***/ }),
-/* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__view__ = __webpack_require__(3);
-
-function Controllor(model) {
-  this.model = model
-  this.view = new __WEBPACK_IMPORTED_MODULE_0__view__["a" /* default */](this.model, this) 
-}
-// 验证牌型 
-Controllor.prototype.valid = function(ip) {
-	if(ip){
-		this.model.validHand(ip)
-		return 
-	}
-  this.model.players.forEach(p => console.log(this.model.validHand(p)))
-}
-//初始化   控制器 这就是   model -> dom html  
-Controllor.prototype.init = function(isTest) {
-  this.model.init(isTest)
-  this.view.init()
-  console.log('init')
-}
-// 增加玩家
-Controllor.prototype.addPlayer = function() {
-  let newplayer = this.model.addPlayer()
-  //this.view.renderOne(newplayer)
-}
-//start
-Controllor.prototype.start = function(){
-	//创建玩家
-	this.model.init()
-	console.log('control start')
-	//游戏开始
-	this.model.update()
-}
-Controllor.prototype.btnsHandler = function(e){
-	let target = e.target
-	let method = target.getAttribute('data-btn')
-console.log('btn press','===',this.model.pos)
-this.model['btn_'+method]()
-	console.log('可以往下了')
-	this.model.update()
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Controllor);
-
-/***/ }),
-/* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-function view(model, controllor) {
-  this.model = model
-  this.Controllor = controllor
-  this.el = document.querySelector('body')
-  this.playerTemplate = `<div class="player">
-			<p class='name'></p><p>剩余筹码:<span	 class='chip'></span></p>
-			<p>下注筹码:<span	 class='outChip'></span></p>
-			<div class='pokers'></div>	
-			<p>当前牌型:<span	 class='poker-val'></span></p>	
-			</div>`
-  this.bankerTemplate = `<div class="banker">
-			<p class='name'>庄家</p><p>池底:<span	 class='chippool'></span></p>
-			<p>当前底注:<span	 class='chip'></span></p>	
-			<div class='pokers'></div>	
-			</div>`
-  this.askTemplate = document.querySelector('.ask')
-  //regist obs
-  this.model.regBankerObs(this.renderBanker.bind(this))
-  this.model.regPlayerObs(this.renderAll.bind(this))
-  this.model.regAskObs(this.renderAsk.bind(this))
-}
-view.prototype = {
-	init : function() {
-
-  let playerPart = this.el
-  
-  playerPart.querySelector('.addPlayer').addEventListener('click', () => {
-    this.Controllor.addPlayer()
-  })
-  playerPart.querySelector('.init').addEventListener('click', () => {
-    this.Controllor.init()
-  })
-  playerPart.querySelector('.valid').addEventListener('click', () => {
-    this.Controllor.valid()
-  })
-  playerPart.querySelector('.start').addEventListener('click', () => {
-    this.Controllor.start()
-  })
-  playerPart.querySelector('.continue').addEventListener('click', () => {
-    this.Controllor.start()
-  })
-  playerPart.querySelector('.ans-btn').addEventListener('click', () => {
-    this.Controllor.next()
-  })
-
-  playerPart.querySelectorAll('.sel button').forEach(x => x.addEventListener('click', (e) => {
-    this.Controllor.btnsHandler(e)
-  }))
-}
-	,
-  renderBanker: function() {
-    let obj = this.model.banker
-    let dom = obj.el || document.createElement('div')
-    dom.innerHTML = this.bankerTemplate
-    dom.querySelector('.name').innerText = obj.name
-    dom.querySelector('.chippool').innerText = obj.chippool
-    dom.querySelector('.chip').innerText = obj.chip
-    obj.hand.sort((a, b) => a.key - b.key)
-    obj.hand.forEach((p) => {
-      let card = document.createElement('span')
-      card.setAttribute('class', `poker-${p.type}`)
-      card.innerText = `${p.cardFace}`
-      dom.querySelector('.pokers').appendChild(card)
-    }, )
-    obj.el = dom
-    document.querySelector('.banker').appendChild(obj.el)
-  },
-  renderOne: function(obj) {
-    let dom = obj.el || document.createElement('div')
-    dom.innerHTML = this.playerTemplate
-    dom.querySelector('.name').innerText = obj.name
-    dom.querySelector('.chip').innerText = obj.chip
-    dom.querySelector('.outChip').innerText = obj.outChip
-    obj.pokerVal = this.model.validHand(obj)
-    dom.querySelector('.poker-val').innerText = obj.pokerVal[2] + '=》' + obj.pokerVal[1]
-
-    obj.hand.sort((a, b) => a.key - b.key)
-    obj.hand.forEach((p) => {
-      let card = document.createElement('span')
-      card.setAttribute('class', `poker-${p.type}`)
-      card.innerText = `${p.cardFace}`
-      dom.querySelector('.pokers').appendChild(card)
-    }, )
-    obj.el = dom
-    this.el.querySelector('.players').appendChild(obj.el)
-  },
-  renderAll: function() {
-    this.renderBanker()
-    this.model.players.map((player) => {
-      this.renderOne(player)
-      this.el.querySelector('.players').appendChild(player.el)
-    })
-  },
-  renderAsk: function() {
-  	let player = arguments[0],
-  	bool = arguments[1]
-    console.log('Controllor ask',player,bool)
-    let dom = this.askTemplate || document.querySelector('.ask')
-    player.el.appendChild(dom)
-    if(bool !== false){
-    dom.style.display = 'flex'
-    }else{
-    	dom.style.display = 'none'
-    }
-  },
-  
-}
-/* harmony default export */ __webpack_exports__["a"] = (view);
-
-/***/ }),
 /* 4 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-  function Poker(key) {
-    this.key = key
-    this.cardFace = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2']
-    this.typeFace = ['♠', '♥', '♣', '♦']
-    this.val = Number.parseInt(this.key / 4)
-    this.type = this.key % 4
-    return {
-      cardFace: `${this.typeFace[this.type]} ${this.cardFace[this.val]}`,
-      key: this.key,
-      type:this.type,
-      val:this.val
-    }
-  }
-  /* harmony default export */ __webpack_exports__["a"] = (Poker);
-
-/***/ }),
-/* 5 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/*  不重复的 m 个元素 选 n 个 
-*	[a,b,c] 选 2    以数组对应的下标  的值作为 是否选择的标记   [1,0,1] => ac
-*	110000  => 101000 => 100100 => 100010 => 100001
-*	可见规律，寻找第一个 10 然后交换成 01    就是1向右移动 移到头 然后移第二个
-*	
-*/	
-function arange (arr=['A','B','C'],num=2){
-	let s = []
-	let re = []
-	
-	
-	
-	
-	for(let i =0;i<arr.length-num+1;i++){
-		//移动首位
-		for(let sl = 0;sl<arr.length;sl++){
-		if(sl<num+i && sl>=i) s[sl]=1
-		else s[sl]=0
-		}
-	re.push(s.join(''))
-		for(let k =i+1;k<arr.length;k++){
-			//查找 10
-			if(s[k]==0 && s[k -1] ==1){
-				//交换
-				let t = s[k]
-				s[k] = s[k-1]
-				s[k - 1] = t
-					re.push(s.join(''))
-			} 
-				
-		}
-			if(s[i]==0 && s[i -1] ==1){
-				//交换
-				let t = s[i]
-				s[i] = s[i-1]
-				s[i - 1] = t
-					re.push(s.join(''))
-			} 
-	}
-	return re.reduce((o,str)=>{
-		//console.log(str)
-		o.push(arr.filter((x,i)=>{
-			//console.log(str.slice(i,i+1))
-			return str.slice(i,i+1)!= 0}))
-			return o
-	},[])
-}
-/* unused harmony default export */ var _unused_webpack_default_export = (arange);
-
-/***/ }),
-/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -604,16 +452,15 @@ Player.prototype = {
 /* harmony default export */ __webpack_exports__["a"] = (Player);
 
 /***/ }),
-/* 7 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (immutable) */ __webpack_exports__["a"] = valid;
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__10ChangeAlgorithem__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__10ChangeAlgorithem__ = __webpack_require__(1);
 
 function valid(player) {
       // 所有的判定方法均返回一个数组 [ [具体对象]，[可能性2]]
-      console.log(player)
       let hand = player.hand.concat(this.banker.hand)
       hand.sort((a, b) => a.key - b.key)
       //顺子
@@ -772,11 +619,11 @@ function valid(player) {
     }
 
 /***/ }),
-/* 8 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__poker__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__poker__ = __webpack_require__(0);
 
 var makehands = (seed)=>{
 	let i = seed,re = []
@@ -807,6 +654,170 @@ var makehands = (seed)=>{
 }
 /* harmony default export */ __webpack_exports__["a"] = (makehands);
 
+
+/***/ }),
+/* 7 */,
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__view__ = __webpack_require__(9);
+
+function Controllor(model) {
+  this.model = model
+  this.view = new __WEBPACK_IMPORTED_MODULE_0__view__["a" /* default */](this.model, this) 
+}
+// 验证牌型 
+Controllor.prototype.valid = function(ip) {
+	if(ip){
+		this.model.validHand(ip)
+		return 
+	}
+  this.model.players.forEach(p => console.log(this.model.validHand(p)))
+}
+//初始化   控制器 这就是   model -> dom html  
+Controllor.prototype.init = function(isTest) {
+  this.model.init(isTest)
+  this.view.init()
+  console.log('init')
+}
+// 增加玩家
+Controllor.prototype.addPlayer = function() {
+  let newplayer = this.model.addPlayer()
+  //this.view.renderOne(newplayer)
+}
+//start
+Controllor.prototype.start = function(){
+	//创建玩家
+	this.model.init()
+	console.log('control start')
+	//游戏开始
+	this.model.update()
+}
+Controllor.prototype.btnsHandler = function(e){
+	let target = e.target
+	let method = target.getAttribute('data-btn')
+console.log('btn press','===',this.model.pos)
+this.model['btn_'+method]()
+	console.log('可以往下了')
+	this.model.update()
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Controllor);
+
+/***/ }),
+/* 9 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+function view(model, controllor) {
+  this.model = model
+  this.Controllor = controllor
+  this.el = document.querySelector('body')
+  this.playerTemplate = `<div class="player">
+			<p class='name'></p><p>剩余筹码:<span	 class='chip'></span></p>
+			<p>下注筹码:<span	 class='outChip'></span></p>
+			<div class='pokers'></div>	
+			<p>当前牌型:<span	 class='poker-val'></span></p>	
+			</div>`
+  this.bankerTemplate = `<div class="banker">
+			<p class='name'>庄家</p><p>池底:<span	 class='chippool'></span></p>
+			<p>当前底注:<span	 class='chip'></span></p>	
+			<div class='pokers'></div>	
+			</div>`
+  this.askTemplate = document.querySelector('.ask')
+  //regist obs
+  this.model.regBankerObs(this.renderBanker.bind(this))
+  this.model.regPlayerObs(this.renderAll.bind(this))
+  this.model.regAskObs(this.renderAsk.bind(this))
+}
+view.prototype = {
+	init : function() {
+
+  let playerPart = this.el
+  
+  playerPart.querySelector('.addPlayer').addEventListener('click', () => {
+    this.Controllor.addPlayer()
+  })
+  playerPart.querySelector('.init').addEventListener('click', () => {
+    this.Controllor.init()
+  })
+  playerPart.querySelector('.valid').addEventListener('click', () => {
+    this.Controllor.valid()
+  })
+  playerPart.querySelector('.start').addEventListener('click', () => {
+    this.Controllor.start()
+  })
+  playerPart.querySelector('.continue').addEventListener('click', () => {
+    this.Controllor.start()
+  })
+  playerPart.querySelector('.ans-btn').addEventListener('click', () => {
+    this.Controllor.next()
+  })
+
+  playerPart.querySelectorAll('.sel button').forEach(x => x.addEventListener('click', (e) => {
+    this.Controllor.btnsHandler(e)
+  }))
+}
+	,
+  renderBanker: function() {
+    let obj = this.model.banker
+    let dom = obj.el || document.createElement('div')
+    dom.innerHTML = this.bankerTemplate
+    dom.querySelector('.name').innerText = obj.name
+    dom.querySelector('.chippool').innerText = obj.chippool
+    dom.querySelector('.chip').innerText = obj.chip
+    obj.hand.sort((a, b) => a.key - b.key)
+    obj.hand.forEach((p) => {
+      let card = document.createElement('span')
+      card.setAttribute('class', `poker-${p.type}`)
+      card.innerText = `${p.cardFace}`
+      dom.querySelector('.pokers').appendChild(card)
+    }, )
+    obj.el = dom
+    document.querySelector('.banker').appendChild(obj.el)
+  },
+  renderOne: function(obj) {
+    let dom = obj.el || document.createElement('div')
+    dom.innerHTML = this.playerTemplate
+    dom.querySelector('.name').innerText = obj.name
+    dom.querySelector('.chip').innerText = obj.chip
+    dom.querySelector('.outChip').innerText = obj.outChip
+    obj.pokerVal = this.model.validHand(obj)
+    dom.querySelector('.poker-val').innerText = obj.pokerVal[2] + '=》' + obj.pokerVal[1]
+
+    obj.hand.sort((a, b) => a.key - b.key)
+    obj.hand.forEach((p) => {
+      let card = document.createElement('span')
+      card.setAttribute('class', `poker-${p.type}`)
+      card.innerText = `${p.cardFace}`
+      dom.querySelector('.pokers').appendChild(card)
+    }, )
+    obj.el = dom
+    this.el.querySelector('.players').appendChild(obj.el)
+  },
+  renderAll: function() {
+    this.renderBanker()
+    this.model.players.map((player) => {
+      this.renderOne(player)
+      this.el.querySelector('.players').appendChild(player.el)
+    })
+  },
+  renderAsk: function() {
+  	let player = arguments[0],
+  	bool = arguments[1]
+    console.log('Controllor ask',player,bool)
+    let dom = this.askTemplate || document.querySelector('.ask')
+    player.el.appendChild(dom)
+    if(bool !== false){
+    dom.style.display = 'flex'
+    }else{
+    	dom.style.display = 'none'
+    }
+  },
+  
+}
+/* harmony default export */ __webpack_exports__["a"] = (view);
 
 /***/ })
 /******/ ]);

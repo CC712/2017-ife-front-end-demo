@@ -1,7 +1,6 @@
 import arange from './10ChangeAlgorithem'
 export default function valid(player) {
       // 所有的判定方法均返回一个数组 [ [具体对象]，[可能性2]]
-      console.log(player)
       let hand = player.hand.concat(this.banker.hand)
       hand.sort((a, b) => a.key - b.key)
       //顺子
