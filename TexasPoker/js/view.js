@@ -2,50 +2,31 @@ function view(model, controllor) {
   this.model = model
   this.Controllor = controllor
   this.el = document.querySelector('body')
+  this.table = document.querySelector('.table')
   this.playerTemplate = `<div class="player">
 			<p class='name'></p><p>剩余筹码:<span	 class='chip'></span></p>
 			<p>下注筹码:<span	 class='outChip'></span></p>
 			<div class='pokers'></div>	
 			<p>当前牌型:<span	 class='poker-val'></span></p>	
 			</div>`
-  this.bankerTemplate = `<div class="banker">
+  this.bankerTemplate = `
 			<p class='name'>庄家</p><p>池底:<span	 class='chippool'></span></p>
 			<p>当前底注:<span	 class='chip'></span></p>	
 			<div class='pokers'></div>	
-			</div>`
+			`
   this.askTemplate = document.querySelector('.ask')
   //regist obs
   this.model.regBankerObs(this.renderBanker.bind(this))
   this.model.regPlayerObs(this.renderAll.bind(this))
   this.model.regAskObs(this.renderAsk.bind(this))
+  this.model.regDropChipObs(this.dropChipAnimate.bind(this))
+  this.model.regGetChipObs(this.getChipAnimate.bind(this))
 }
 view.prototype = {
 	init : function() {
-
-  let playerPart = this.el
+	this.table.innerHTML = ''
+	console.log('chip init')
   
-  playerPart.querySelector('.addPlayer').addEventListener('click', () => {
-    this.Controllor.addPlayer()
-  })
-  playerPart.querySelector('.init').addEventListener('click', () => {
-    this.Controllor.init()
-  })
-  playerPart.querySelector('.valid').addEventListener('click', () => {
-    this.Controllor.valid()
-  })
-  playerPart.querySelector('.start').addEventListener('click', () => {
-    this.Controllor.start()
-  })
-  playerPart.querySelector('.continue').addEventListener('click', () => {
-    this.Controllor.start()
-  })
-  playerPart.querySelector('.ans-btn').addEventListener('click', () => {
-    this.Controllor.next()
-  })
-
-  playerPart.querySelectorAll('.sel button').forEach(x => x.addEventListener('click', (e) => {
-    this.Controllor.btnsHandler(e)
-  }))
 }
 	,
   renderBanker: function() {
@@ -75,6 +56,7 @@ view.prototype = {
     dom.querySelector('.poker-val').innerText = obj.pokerVal[2] + '=》' + obj.pokerVal[1]
 
     obj.hand.sort((a, b) => a.key - b.key)
+    // render poker
     obj.hand.forEach((p) => {
       let card = document.createElement('span')
       card.setAttribute('class', `poker-${p.type}`)
@@ -82,11 +64,16 @@ view.prototype = {
       dom.querySelector('.pokers').appendChild(card)
     }, )
     obj.el = dom
+    if(obj.state == 2){
+    	obj.el.setAttribute('class','folded')
+    }else{
+    	obj.el.removeAttribute('class')
+    }
     this.el.querySelector('.players').appendChild(obj.el)
   },
   renderAll: function() {
     this.renderBanker()
-    this.model.players.map((player) => {
+    this.model.players.forEach((player) => {
       this.renderOne(player)
       this.el.querySelector('.players').appendChild(player.el)
     })
@@ -103,6 +90,39 @@ view.prototype = {
     	dom.style.display = 'none'
     }
   },
-  
+  //render chipfield
+  renderChipField: function(){
+  	this.model.players.forEach(p=>{
+		let field = document.createElement('div')
+		field.setAttribute('class','chipField')
+		p.chipField = field
+		this.table.appendChild(field)
+	})
+  }
+  ,
+  //丢筹码动画效果	
+  dropChipAnimate:function(player){
+  	let chip = document.createElement('div')
+  	chip.innerText = player.outChip - player.chipField.innerText
+  	let wb = player.el.getBoundingClientRect(),
+  			x = wb.left,
+  			y = wb.top
+  	chip.style.left = x+'px'
+  	chip.setAttribute('class','droppedChip dropping')
+  	player.chipField.appendChild(chip)
+  },
+  //收筹码动画
+  getChipAnimate : function (winner){
+  	let chips = this.table.querySelectorAll('.droppedChip')
+  	let wb = winner.el.getBoundingClientRect(),
+  			x = wb.left,
+  			y = wb.top
+  			console.log('get =>',x,y)
+  		//动画
+  		chips.forEach(dom=>{
+  			dom.style.left = x+'px'
+  			dom.setAttribute('class','droppedChip getting')
+  		})
+  }
 }
 export default view

@@ -14,19 +14,28 @@ Controllor.prototype.valid = function(ip) {
 //初始化   控制器 这就是   model -> dom html  
 Controllor.prototype.init = function(isTest) {
   this.model.init(isTest)
-  this.view.init()
+  let playerPart = this.view.el
+  
+  playerPart.querySelector('.start').addEventListener('click', () => {
+    this.start()
+  })
+  playerPart.querySelectorAll('.sel button').forEach(x => x.addEventListener('click', (e) => {
+    this.btnsHandler(e)
+  }))
   console.log('init')
 }
 // 增加玩家
 Controllor.prototype.addPlayer = function() {
   let newplayer = this.model.addPlayer()
-  //this.view.renderOne(newplayer)
 }
 //start
 Controllor.prototype.start = function(){
 	//创建玩家
 	this.model.init()
-	console.log('control start')
+	//view init
+	this.view.init()
+	this.view.renderChipField()
+	console.log('control start',this.model.players)
 	//游戏开始
 	this.model.update()
 }
