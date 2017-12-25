@@ -16,11 +16,11 @@ function view(model, controllor) {
 			`
   this.askTemplate = document.querySelector('.ask')
   //regist obs
-  this.model.regBankerObs(this.renderBanker.bind(this))
-  this.model.regPlayerObs(this.renderAll.bind(this))
-  this.model.regAskObs(this.renderAsk.bind(this))
-  this.model.regDropChipObs(this.dropChipAnimate.bind(this))
-  this.model.regGetChipObs(this.getChipAnimate.bind(this))
+  this.model.regObs('banker',this.renderBanker.bind(this))
+  this.model.regObs('player',this.renderAll.bind(this))
+	this.model.regObs('ask',this.renderAsk.bind(this))
+	this.model.regObs('dropChip',this.dropChipAnimate.bind(this))
+	this.model.regObs('getChip',this.getChipAnimate.bind(this))
 }
 view.prototype = {
 	init : function() {
@@ -81,7 +81,7 @@ view.prototype = {
   renderAsk: function() {
   	let player = arguments[0],
   	bool = arguments[1]
-    console.log('Controllor ask',player,bool)
+    console.log('ASK =>',player,bool)
     let dom = this.askTemplate || document.querySelector('.ask')
     player.el.appendChild(dom)
     if(bool !== false){
@@ -105,9 +105,11 @@ view.prototype = {
   	let chip = document.createElement('div')
   	chip.innerText = player.outChip - player.chipField.innerText
   	let wb = player.el.getBoundingClientRect(),
-  			x = wb.left,
-  			y = wb.top
+  			swb = this.table.getBoundingClientRect(),
+  			x = wb.left - swb.left ,
+  			y = swb.height/2
   	chip.style.left = x+'px'
+  	chip.style.top = y + 'px'
   	chip.setAttribute('class','droppedChip dropping')
   	player.chipField.appendChild(chip)
   },
@@ -115,12 +117,14 @@ view.prototype = {
   getChipAnimate : function (winner){
   	let chips = this.table.querySelectorAll('.droppedChip')
   	let wb = winner.el.getBoundingClientRect(),
-  			x = wb.left,
-  			y = wb.top
-  			console.log('get =>',x,y)
+  		sb = this.table.getBoundingClientRect(),
+  			x = wb.left - sb.left,
+  			y = wb.top - sb.top
+  			console.log('get =>',x,y , sb)
   		//动画
   		chips.forEach(dom=>{
   			dom.style.left = x+'px'
+ 			 	dom.style.top = y + 'px'
   			dom.setAttribute('class','droppedChip getting')
   		})
   }

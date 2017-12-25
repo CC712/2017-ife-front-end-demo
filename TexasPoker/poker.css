@@ -11,6 +11,12 @@
 	padding: 10px 5px;
 	border: 1px solid black;
 	border-radius: 5px;
+	animation:1s pokerReverse ease-in;
+	backface-visibility: hidden;
+}
+@keyframes pokerReverse {
+	from{transform: rotateY(-90deg);}
+	to{transform: rotateY(0deg);}
 }
 
 .folded {

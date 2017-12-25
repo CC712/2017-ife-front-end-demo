@@ -3,6 +3,7 @@ import Player from './player'
 import arange from './10ChangeAlgorithem'
 import valid from './valid'
 import makehand from './testHands'
+import scene from './scene'
 var Texas = (function() {
   //封装
   //游戏主函数
@@ -15,36 +16,34 @@ var Texas = (function() {
     this.banker = new Player('Banker', this)
     this.banker.chip = 0
     this.banker.chippool = 0
-    //updating loop
     //观察者模式的池
-    this.playersObservers = []
-    this.bankerObservers = []
-    this.stateObservers = []
-    this.askObservers = []
-    this.dropChipObservers = []
-    this.getChipObservers = []
-    // state 0 waiting 1 playing
-    this.state = 0
-    this.stateMap = ['start', 'turn', 'deal', 'end']
+    this.obsPool = {}
+//  
+		this.state = 'start'
+		this.stateMap = {}
     //session 
     this.aBlindChip = 4
     this.btn = 0
-    this.sb = 0
-    this.bb = 0
+    //position 
     this.pos = undefined
     //obs
   }
   Texas.prototype = {
     init: function(isTest) {
+    	//state machine init 
+    	this.stateMap = {
+    		'start' : new scene.scene_start(this),
+    		'turn' : new scene.scene_turn(this),
+    		'deal' : new scene.scene_deal(this),
+    		'end' : new scene.scene_end(this),
+    	}
       //初始化
       this.cardPool = []
-      this.state = 0
+      this.state = 'start'
       //this.players = []
       this.banker.init()
       this.banker.chippool = 0
       this.pos = undefined
-      this.sb = undefined
-      this.bb = undefined
       for(let i = 0; i < 52; i++) {
         this.cardPool[i] = new Poker(i)
       }
@@ -66,117 +65,18 @@ var Texas = (function() {
           return fg
         })
       }
-      //notify
-      this.notifyBankerObs()
-    },
-    start: function() {
-     
-      //发公牌
-      this.banker.addHand(3)
-      this.players.forEach(p => {
-        p.addHand(2)
-        p.state = 1
-      })
-      //盲注
-      this.btn = ~~(Math.random() * this.players.length)
-      this.plusPos(1)
-      this.dropChip(this.players[this.pos], 2)
-      this.plusPos(1)
-      this.dropChip(this.players[this.pos], 4)
-      this.state++
-        //console.log('btn:', this.btn, this.pos)
-      // update means next one or next situation 
-      this.update()
-
-    },
-    //chip
-    turn: function() {
-
-      //aliveplayers not enough
-      let alivePlayers = this.players.filter(p => p.state == 1 || p.state == 0)
-      //console.log('alivenum', alivePlayers.length)
-      if(alivePlayers.length == 1) {
-        this.state = 3
-        alivePlayers[0].state = 0
-        this.update()
-        return
-      }
-      //2 at less alive 
-      let lastp = this.pos
-      while(this.players[this.pos].state != 1) {
-        this.plusPos(1)
-        if(this.pos == lastp) {
-          //you go around and you find your self
-          // every one made their desition
-          // so that you can go to next state
-          this.state++
-            console.log('can go to deal', lastp, this.pos)
-          this.update()
-          return
-        }
-      }
-      //you find meybe 1000 miles away after lastp
-      let p = this.players[this.pos]
-      //console.log(this.pos, '<===> player :', p.name)
-      this.notifyAskObs(p, 1)
-      //next guy
-      //already drop chip
-      p.state = 0
-    },
-    //state deal
-    deal: function() {
-
-      this.dealToBank()
-      if(this.banker.hand.length == 5) {
-        // hide ask
-        this.notifyAskObs(this.players[this.btn], false)
-        //next state
-        this.state++
-
-          this.update()
-        return
-      }
-      this.state = 1
-      //deal 之后的 应该是 在 小盲的位置上  故 pos ++
-      this.plusPos(1)
-
-      this.players.forEach(p => {
-        if(p.state == 0) p.state = 1
-      })
-
-      this.update()
-    },
-    end: function() {
-      console.log('hello end')
-      // hide ask
-      this.notifyAskObs(this.players[this.btn], false)
-
-      //winner
-      let alivePlayers = this.players.filter(p => p.state == 0)
-      let winner = alivePlayers[0]
-      alivePlayers.forEach(p => {
-        winner = p.pokerVal[1] < winner.pokerVal[1] ? p : winner
-      })
-      console.log(winner.name, '<==winner', winner.hand)
-      //getchip 
-      winner.changeChip(this.banker.chippool)
-      //animate
-      this.notifyGetChipObs(winner)
+      //notify banker
+      this.notifyObs('banker')
     },
     update: function() {
-
-     // console.log('update', this.state)
-      // 循环引用的问题
-      this[this.stateMap[this.state]]()
-      // this return is to end closure , 
-      // avoid memory disclosure
-      return
+				this.stateMap[this.state].doing()
+				console.log('update',this.state)
     },
     //
     dealToBank: function() {
       if(this.cardPool.length < 1) return console.log('没牌了')
       this.banker.addHand(1)
-      this.notifyBankerObs()
+      this.notifyObs('banker')
     },
     addPlayer: function() {
       if(this.players.length > 9) return console.log('人满了大哥')
@@ -193,39 +93,22 @@ var Texas = (function() {
     validHand: valid // valid(player)
       ,
     // 可以用策略模式精简一下才对 先放着 先实现先
-    regPlayerObs: function(fnbind) {
-      this.playersObservers.push(fnbind)
-    },
-    regBankerObs: function(fnbind) {
-      this.bankerObservers.push(fnbind)
-    },
-    notifyPlayersObs: function(arg) {
-      this.playersObservers.forEach(f => f(arg))
-    },
-    notifyBankerObs: function() {
-      this.bankerObservers.forEach(f => f())
-    },
-    regAskObs: function(fnbind) {
-      this.askObservers.push(fnbind)
-    },
-    notifyAskObs: function() {
-      let arg = []
-      for(let i in arguments) {
-        arg[i] = arguments[i]
-      }
-      this.askObservers.forEach(f => f.apply(this, arguments))
-    },
-    regDropChipObs : function (fnbind){
-    	this.dropChipObservers.push(fnbind)
-    },
-    notifyDropChipObs: function (arg){
-    	this.dropChipObservers.forEach(f=>f(arg))
-    },
-    regGetChipObs : function (fnbind){
-    	this.getChipObservers.push(fnbind)
-    },
-    notifyGetChipObs: function (arg){
-    	this.getChipObservers.forEach(f=>f(arg))
+    regObs(type, fn) {
+    	if(!Array.isArray(this.obsPool[type])) {
+				this.obsPool[type] = []    		
+    	}
+    	this.obsPool[type].push(fn)
+    }
+    ,
+    notifyObs(){
+    	
+    	let arg = Array.from(arguments).slice(0)
+    	let type = arg[0]
+    	arg = arg.reduce((o,n)=>{
+    		o.push(n)
+    		return o
+    	},[]).slice(1)
+    	this.obsPool[type].forEach(f => f(...arg))
     },
     //btnhandler
     //adapter for drop chips
@@ -235,24 +118,8 @@ var Texas = (function() {
       p.changeChip(0 - num)
       this.banker.chippool += num
       //console.log('now chippool', this.banker.chippool)
-      this.notifyBankerObs()
-      this.notifyDropChipObs(p)
-    },
-    btn_follow: function() {
-      let _chip = this.banker.chip
-      this.dropChip(this.players[this.pos], _chip)
-    },
-    btn_add: function() {
-      //一个大盲
-      this.dropChip(this.players[this.pos], this.aBlindChip)
-    },
-    btn_allin: function() {
-      this.dropChip(this.players[this.pos], this.players[this.pos].chip)
-    },
-    btn_fold: function() {
-      //fold and dead
-      this.players[this.pos].state = 2
-      this.notifyPlayersObs()
+      this.notifyObs('banker')
+      this.notifyObs('dropChip',p)
     },
     //util
     plusPos: function(num) {

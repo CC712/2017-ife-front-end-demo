@@ -81,6 +81,19 @@
       val:this.val
     }
   }
+//class Poker {
+//	constructor(key) {
+//	this.key = key
+//  this.cardFace = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2']
+//  this.typeFace = ['♠', '♥', '♣', '♦']
+//  this.val = Number.parseInt(this.key / 4)
+//  this.type = this.key % 4
+//  this.new()
+//	}
+//	static new(key) {
+//		return this(key)
+//	}
+//}
   /* harmony default export */ __webpack_exports__["a"] = (Poker);
 
 /***/ }),
@@ -144,7 +157,7 @@ function arange (arr=['A','B','C'],num=2){
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__js_texas__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__js_Controllor__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__js_Controllor__ = __webpack_require__(8);
 
 
 
@@ -163,6 +176,8 @@ Controllor.init()
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__10ChangeAlgorithem__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__valid__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__testHands__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__scene__ = __webpack_require__(7);
+
 
 
 
@@ -180,36 +195,34 @@ var Texas = (function() {
     this.banker = new __WEBPACK_IMPORTED_MODULE_1__player__["a" /* default */]('Banker', this)
     this.banker.chip = 0
     this.banker.chippool = 0
-    //updating loop
     //观察者模式的池
-    this.playersObservers = []
-    this.bankerObservers = []
-    this.stateObservers = []
-    this.askObservers = []
-    this.dropChipObservers = []
-    this.getChipObservers = []
-    // state 0 waiting 1 playing
-    this.state = 0
-    this.stateMap = ['start', 'turn', 'deal', 'end']
+    this.obsPool = {}
+//  
+		this.state = 'start'
+		this.stateMap = {}
     //session 
     this.aBlindChip = 4
     this.btn = 0
-    this.sb = 0
-    this.bb = 0
+    //position 
     this.pos = undefined
     //obs
   }
   Texas.prototype = {
     init: function(isTest) {
+    	//state machine init 
+    	this.stateMap = {
+    		'start' : new __WEBPACK_IMPORTED_MODULE_5__scene__["a" /* default */].scene_start(this),
+    		'turn' : new __WEBPACK_IMPORTED_MODULE_5__scene__["a" /* default */].scene_turn(this),
+    		'deal' : new __WEBPACK_IMPORTED_MODULE_5__scene__["a" /* default */].scene_deal(this),
+    		'end' : new __WEBPACK_IMPORTED_MODULE_5__scene__["a" /* default */].scene_end(this),
+    	}
       //初始化
       this.cardPool = []
-      this.state = 0
+      this.state = 'start'
       //this.players = []
       this.banker.init()
       this.banker.chippool = 0
       this.pos = undefined
-      this.sb = undefined
-      this.bb = undefined
       for(let i = 0; i < 52; i++) {
         this.cardPool[i] = new __WEBPACK_IMPORTED_MODULE_0__poker__["a" /* default */](i)
       }
@@ -231,117 +244,18 @@ var Texas = (function() {
           return fg
         })
       }
-      //notify
-      this.notifyBankerObs()
-    },
-    start: function() {
-     
-      //发公牌
-      this.banker.addHand(3)
-      this.players.forEach(p => {
-        p.addHand(2)
-        p.state = 1
-      })
-      //盲注
-      this.btn = ~~(Math.random() * this.players.length)
-      this.plusPos(1)
-      this.dropChip(this.players[this.pos], 2)
-      this.plusPos(1)
-      this.dropChip(this.players[this.pos], 4)
-      this.state++
-        //console.log('btn:', this.btn, this.pos)
-      // update means next one or next situation 
-      this.update()
-
-    },
-    //chip
-    turn: function() {
-
-      //aliveplayers not enough
-      let alivePlayers = this.players.filter(p => p.state == 1 || p.state == 0)
-      //console.log('alivenum', alivePlayers.length)
-      if(alivePlayers.length == 1) {
-        this.state = 3
-        alivePlayers[0].state = 0
-        this.update()
-        return
-      }
-      //2 at less alive 
-      let lastp = this.pos
-      while(this.players[this.pos].state != 1) {
-        this.plusPos(1)
-        if(this.pos == lastp) {
-          //you go around and you find your self
-          // every one made their desition
-          // so that you can go to next state
-          this.state++
-            console.log('can go to deal', lastp, this.pos)
-          this.update()
-          return
-        }
-      }
-      //you find meybe 1000 miles away after lastp
-      let p = this.players[this.pos]
-      //console.log(this.pos, '<===> player :', p.name)
-      this.notifyAskObs(p, 1)
-      //next guy
-      //already drop chip
-      p.state = 0
-    },
-    //state deal
-    deal: function() {
-
-      this.dealToBank()
-      if(this.banker.hand.length == 5) {
-        // hide ask
-        this.notifyAskObs(this.players[this.btn], false)
-        //next state
-        this.state++
-
-          this.update()
-        return
-      }
-      this.state = 1
-      //deal 之后的 应该是 在 小盲的位置上  故 pos ++
-      this.plusPos(1)
-
-      this.players.forEach(p => {
-        if(p.state == 0) p.state = 1
-      })
-
-      this.update()
-    },
-    end: function() {
-      console.log('hello end')
-      // hide ask
-      this.notifyAskObs(this.players[this.btn], false)
-
-      //winner
-      let alivePlayers = this.players.filter(p => p.state == 0)
-      let winner = alivePlayers[0]
-      alivePlayers.forEach(p => {
-        winner = p.pokerVal[1] < winner.pokerVal[1] ? p : winner
-      })
-      console.log(winner.name, '<==winner', winner.hand)
-      //getchip 
-      winner.changeChip(this.banker.chippool)
-      //animate
-      this.notifyGetChipObs(winner)
+      //notify banker
+      this.notifyObs('banker')
     },
     update: function() {
-
-     // console.log('update', this.state)
-      // 循环引用的问题
-      this[this.stateMap[this.state]]()
-      // this return is to end closure , 
-      // avoid memory disclosure
-      return
+				this.stateMap[this.state].doing()
+				console.log('update',this.state)
     },
     //
     dealToBank: function() {
       if(this.cardPool.length < 1) return console.log('没牌了')
       this.banker.addHand(1)
-      this.notifyBankerObs()
+      this.notifyObs('banker')
     },
     addPlayer: function() {
       if(this.players.length > 9) return console.log('人满了大哥')
@@ -358,39 +272,22 @@ var Texas = (function() {
     validHand: __WEBPACK_IMPORTED_MODULE_3__valid__["a" /* default */] // valid(player)
       ,
     // 可以用策略模式精简一下才对 先放着 先实现先
-    regPlayerObs: function(fnbind) {
-      this.playersObservers.push(fnbind)
-    },
-    regBankerObs: function(fnbind) {
-      this.bankerObservers.push(fnbind)
-    },
-    notifyPlayersObs: function(arg) {
-      this.playersObservers.forEach(f => f(arg))
-    },
-    notifyBankerObs: function() {
-      this.bankerObservers.forEach(f => f())
-    },
-    regAskObs: function(fnbind) {
-      this.askObservers.push(fnbind)
-    },
-    notifyAskObs: function() {
-      let arg = []
-      for(let i in arguments) {
-        arg[i] = arguments[i]
-      }
-      this.askObservers.forEach(f => f.apply(this, arguments))
-    },
-    regDropChipObs : function (fnbind){
-    	this.dropChipObservers.push(fnbind)
-    },
-    notifyDropChipObs: function (arg){
-    	this.dropChipObservers.forEach(f=>f(arg))
-    },
-    regGetChipObs : function (fnbind){
-    	this.getChipObservers.push(fnbind)
-    },
-    notifyGetChipObs: function (arg){
-    	this.getChipObservers.forEach(f=>f(arg))
+    regObs(type, fn) {
+    	if(!Array.isArray(this.obsPool[type])) {
+				this.obsPool[type] = []    		
+    	}
+    	this.obsPool[type].push(fn)
+    }
+    ,
+    notifyObs(){
+    	
+    	let arg = Array.from(arguments).slice(0)
+    	let type = arg[0]
+    	arg = arg.reduce((o,n)=>{
+    		o.push(n)
+    		return o
+    	},[]).slice(1)
+    	this.obsPool[type].forEach(f => f(...arg))
     },
     //btnhandler
     //adapter for drop chips
@@ -400,24 +297,8 @@ var Texas = (function() {
       p.changeChip(0 - num)
       this.banker.chippool += num
       //console.log('now chippool', this.banker.chippool)
-      this.notifyBankerObs()
-      this.notifyDropChipObs(p)
-    },
-    btn_follow: function() {
-      let _chip = this.banker.chip
-      this.dropChip(this.players[this.pos], _chip)
-    },
-    btn_add: function() {
-      //一个大盲
-      this.dropChip(this.players[this.pos], this.aBlindChip)
-    },
-    btn_allin: function() {
-      this.dropChip(this.players[this.pos], this.players[this.pos].chip)
-    },
-    btn_fold: function() {
-      //fold and dead
-      this.players[this.pos].state = 2
-      this.notifyPlayersObs()
+      this.notifyObs('banker')
+      this.notifyObs('dropChip',p)
     },
     //util
     plusPos: function(num) {
@@ -457,7 +338,7 @@ Player.prototype = {
   changeChip: function(val) {
     this.chip += val
     this.state = 0
-    this.model.notifyPlayersObs(this)
+  	this.model.notifyObs('player',this)
   },
   addHand: function(number) {
   	let pool = this.model.cardPool
@@ -465,7 +346,8 @@ Player.prototype = {
   		let poker = pool.splice(Math.floor(Math.random()*pool.length),1)[0]
     this.hand.push(poker)
    }
-  	this.model.notifyPlayersObs(this)
+//	this.model.notifyPlayersObs(this)
+  	this.model.notifyObs('player',this)
   },
 }
 /* harmony default export */ __webpack_exports__["a"] = (Player);
@@ -679,25 +561,165 @@ var makehands = (seed)=>{
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__view__ = __webpack_require__(8);
+class scene {
+  constructor(model) {
+    this.model = model
+  }
+  switchScene(s) {
+    this.model.state = s
+  }
+  //interface 
+  doing() {}
+  goNext() {
+
+  }
+};
+class scene_start extends scene {
+  constructor(model) {
+    super(model)
+  }
+  doing() {
+    var that = this.model
+    //发公牌
+    that.banker.addHand(3)
+    that.players.forEach(p => {
+      p.addHand(2)
+      p.state = 1
+    })
+    //盲注
+    that.btn = ~~(Math.random() * that.players.length)
+    that.plusPos(1)
+    that.dropChip(that.players[that.pos], 2)
+    that.plusPos(1)
+    that.dropChip(that.players[that.pos], 4)
+    //console.log('btn:', that.btn, that.pos)
+    // update means next one or next situation
+    that.notifyObs('ask',that.players[that.pos])
+    this.switchScene('turn')
+  }
+};
+class scene_turn extends scene {
+  constructor(model) {
+    super(model)
+  }
+  doing() {
+    var that = this.model
+    //aliveplayers not enough
+    let alivePlayers = that.players.filter(p => p.state == 1 || p.state == 0)
+    //console.log('alivenum', alivePlayers.length)
+    if(alivePlayers.length == 1) {
+      alivePlayers[0].state = 0
+      this.switchScene('end')
+      that.update()
+      return
+    }
+    //2 at less alive 
+    let lastp = that.pos
+    while(that.players[that.pos].state != 1) {
+      that.plusPos(1)
+      if(that.pos == lastp) {
+        //you go around and you find your self
+        // every one made their desition
+        // so that you can go to next state
+        console.log('can go to deal', lastp, that.pos)
+        this.switchScene('deal')
+        that.update()
+        return
+      }
+    }
+    //you find meybe 1000 miles away after lastp
+    let p = that.players[that.pos]
+    //console.log(that.pos, '<===> player :', p.name)
+    that.notifyObs('ask', p, 1)
+    //next guy
+    //already drop chip
+    p.state = 0
+  }
+};
+class scene_deal extends scene {
+  constructor(model) {
+    super(model)
+  }
+  doing() {
+    var that = this.model
+    that.dealToBank()
+    if(that.banker.hand.length == 5) {
+      // hide ask
+      that.notifyObs('ask', that.players[that.btn], false)
+      //next state
+      this.switchScene('end')
+      that.update()
+      return
+    }
+
+    //deal 之后的 应该是 在 小盲的位置上  故 pos ++
+    that.plusPos(1)
+    that.players.forEach(p => {
+      if(p.state == 0) p.state = 1
+    })
+    that.notifyObs('ask', that.players[that.btn])
+    this.switchScene('turn')
+		
+  }
+};
+class scene_end extends scene {
+  constructor(model) {
+    super(model)
+  }
+  doing() {
+    var that = this.model
+    console.log('hello end')
+    // hide ask
+    that.notifyObs('ask', that.players[that.btn], false)
+
+    //winner
+    let alivePlayers = that.players.filter(p => p.state == 0)
+    let winner = alivePlayers[0]
+    alivePlayers.forEach(p => {
+      winner = p.pokerVal[1] < winner.pokerVal[1] ? p : winner
+    })
+    console.log(winner.name, '<==winner', winner.hand)
+    //getchip 
+    winner.changeChip(that.banker.chippool)
+    //animate
+    that.notifyObs('getChip', winner)
+  }
+};
+/* harmony default export */ __webpack_exports__["a"] = ({
+	scene_start,
+	scene_end,
+	scene_turn,
+	scene_deal
+});
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__view__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__btn_handlers__ = __webpack_require__(10);
+
+
 
 function Controllor(model) {
   this.model = model
-  this.view = new __WEBPACK_IMPORTED_MODULE_0__view__["a" /* default */](this.model, this) 
+  this.view = new __WEBPACK_IMPORTED_MODULE_0__view__["a" /* default */](this.model, this)
 }
 // 验证牌型 
 Controllor.prototype.valid = function(ip) {
-	if(ip){
-		this.model.validHand(ip)
-		return 
-	}
+  if(ip) {
+    this.model.validHand(ip)
+    return
+  }
   this.model.players.forEach(p => console.log(this.model.validHand(p)))
 }
 //初始化   控制器 这就是   model -> dom html  
 Controllor.prototype.init = function(isTest) {
   this.model.init(isTest)
   let playerPart = this.view.el
-  
+
   playerPart.querySelector('.start').addEventListener('click', () => {
     this.start()
   })
@@ -711,29 +733,30 @@ Controllor.prototype.addPlayer = function() {
   let newplayer = this.model.addPlayer()
 }
 //start
-Controllor.prototype.start = function(){
-	//创建玩家
-	this.model.init()
-	//view init
-	this.view.init()
-	this.view.renderChipField()
-	console.log('control start',this.model.players)
-	//游戏开始
-	this.model.update()
+Controllor.prototype.start = function() {
+  //创建玩家
+  this.model.init()
+  //view init
+  this.view.init()
+  this.view.renderChipField()
+  console.log('control start', this.model.players)
+  //游戏开始
+  this.model.update()
 }
-Controllor.prototype.btnsHandler = function(e){
-	let target = e.target
-	let method = target.getAttribute('data-btn')
-console.log('btn press','===',this.model.pos)
-this.model['btn_'+method]()
-	console.log('可以往下了')
-	this.model.update()
+Controllor.prototype.btnsHandler = function(e) {
+  let target = e.target
+  let method = target.getAttribute('data-btn')
+  console.log('btn press', '===', this.model.pos)
+  __WEBPACK_IMPORTED_MODULE_1__btn_handlers__["a" /* default */][method].call(this.model)
+  console.log('可以往下了')
+  this.model.update()
 }
+//handler
 
 /* harmony default export */ __webpack_exports__["a"] = (Controllor);
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -755,11 +778,11 @@ function view(model, controllor) {
 			`
   this.askTemplate = document.querySelector('.ask')
   //regist obs
-  this.model.regBankerObs(this.renderBanker.bind(this))
-  this.model.regPlayerObs(this.renderAll.bind(this))
-  this.model.regAskObs(this.renderAsk.bind(this))
-  this.model.regDropChipObs(this.dropChipAnimate.bind(this))
-  this.model.regGetChipObs(this.getChipAnimate.bind(this))
+  this.model.regObs('banker',this.renderBanker.bind(this))
+  this.model.regObs('player',this.renderAll.bind(this))
+	this.model.regObs('ask',this.renderAsk.bind(this))
+	this.model.regObs('dropChip',this.dropChipAnimate.bind(this))
+	this.model.regObs('getChip',this.getChipAnimate.bind(this))
 }
 view.prototype = {
 	init : function() {
@@ -820,7 +843,7 @@ view.prototype = {
   renderAsk: function() {
   	let player = arguments[0],
   	bool = arguments[1]
-    console.log('Controllor ask',player,bool)
+    console.log('ASK =>',player,bool)
     let dom = this.askTemplate || document.querySelector('.ask')
     player.el.appendChild(dom)
     if(bool !== false){
@@ -844,9 +867,11 @@ view.prototype = {
   	let chip = document.createElement('div')
   	chip.innerText = player.outChip - player.chipField.innerText
   	let wb = player.el.getBoundingClientRect(),
-  			x = wb.left,
-  			y = wb.top
+  			swb = this.table.getBoundingClientRect(),
+  			x = wb.left - swb.left ,
+  			y = swb.height/2
   	chip.style.left = x+'px'
+  	chip.style.top = y + 'px'
   	chip.setAttribute('class','droppedChip dropping')
   	player.chipField.appendChild(chip)
   },
@@ -854,17 +879,48 @@ view.prototype = {
   getChipAnimate : function (winner){
   	let chips = this.table.querySelectorAll('.droppedChip')
   	let wb = winner.el.getBoundingClientRect(),
-  			x = wb.left,
-  			y = wb.top
-  			console.log('get =>',x,y)
+  		sb = this.table.getBoundingClientRect(),
+  			x = wb.left - sb.left,
+  			y = wb.top - sb.top
+  			console.log('get =>',x,y , sb)
   		//动画
   		chips.forEach(dom=>{
   			dom.style.left = x+'px'
+ 			 	dom.style.top = y + 'px'
   			dom.setAttribute('class','droppedChip getting')
   		})
   }
 }
 /* harmony default export */ __webpack_exports__["a"] = (view);
+
+/***/ }),
+/* 10 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+var follow = function() {
+  let _chip = this.banker.chip
+  this.dropChip(this.players[this.pos], _chip)
+}
+var add = function() {
+  this.dropChip(this.players[this.pos], this.aBlindChip)
+}
+
+var allin = function() {
+  this.dropChip(this.players[this.pos], this.players[this.pos].chip)
+}
+
+var fold = function() {
+  this.players[this.pos].state = 2
+  this.notifyObs('player')
+}
+/* harmony default export */ __webpack_exports__["a"] = ({
+	fold,
+	allin,
+	add,
+	follow
+});
+
 
 /***/ })
 /******/ ]);

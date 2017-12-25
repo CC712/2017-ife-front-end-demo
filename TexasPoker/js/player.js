@@ -17,7 +17,7 @@ Player.prototype = {
   changeChip: function(val) {
     this.chip += val
     this.state = 0
-    this.model.notifyPlayersObs(this)
+  	this.model.notifyObs('player',this)
   },
   addHand: function(number) {
   	let pool = this.model.cardPool
@@ -25,7 +25,8 @@ Player.prototype = {
   		let poker = pool.splice(Math.floor(Math.random()*pool.length),1)[0]
     this.hand.push(poker)
    }
-  	this.model.notifyPlayersObs(this)
+//	this.model.notifyPlayersObs(this)
+  	this.model.notifyObs('player',this)
   },
 }
 export default Player
