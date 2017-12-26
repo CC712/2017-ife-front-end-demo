@@ -39,6 +39,11 @@ Controllor.prototype.start = function() {
   this.view.renderChipField()
   console.log('control start', this.model.players)
   //游戏开始
+    //button text  change
+  	let btn = this.view.el.querySelector('button[class = start]')
+  	btn.setAttribute('disabled','disabled')
+  	btn.style.backgroundColor = '#ccc'
+  	btn.innerText = '游戏中'
   this.model.update()
 }
 Controllor.prototype.btnsHandler = function(e) {
@@ -47,7 +52,14 @@ Controllor.prototype.btnsHandler = function(e) {
   console.log('btn press', '===', this.model.pos)
   btn_handlers[method].call(this.model)
   console.log('可以往下了')
+  
   this.model.update()
+  if(this.model.state == 'start'){
+  	let btn = this.view.el.querySelector('button[class = start]')
+  	btn.removeAttribute('disabled')
+  	btn.style.backgroundColor = 'black'
+  	btn.innerText = '开始游戏'
+  }
 }
 //handler
 

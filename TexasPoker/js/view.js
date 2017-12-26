@@ -128,5 +128,6 @@ view.prototype = {
   			dom.setAttribute('class','droppedChip getting')
   		})
   }
+
 }
 export default view
