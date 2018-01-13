@@ -8,20 +8,16 @@ const jwt = require('jsonwebtoken')
 router.post('/', function(req, res, next) {
   console.log('**built token**', req.body)
   var uid = String(req.body.uid),
-    pwd = String(req.body.pwd),
-    token = jwt.sign({
-      //exp: Math.floor(Date.now() / 1000) + (60 * 60),
-      uid: uid
-    }, 'ThisIsSecret', {
-      expiresIn: '1m'
-    })
+    	pwd = String(req.body.pwd)
 
   var ndb = db.getDB()
-  console.log('$$$$$$$4conflict',uid,pwd)
+  console.log('$$$$$$$4conflict', uid, pwd)
   // comflict uid
   ndb.find('player', {
     uid: uid
-  },{limit: 2}).then(r => {
+  }, {
+    limit: 2
+  }).then(r => {
     if(r[0] == undefined) return new error('uid avaliable')
     res.send({
       success: false,

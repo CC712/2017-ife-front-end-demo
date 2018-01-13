@@ -57,9 +57,9 @@ DB.prototype.close = function() {
     this.log('db close')
   }).catch(err => this.log(err))
 }
-DB.prototype.log = function(txt) {
+DB.prototype.log = function(txt, is_mute = false) {
   let info = log(txt)
-  
+  !is_mute && console.log(info)
   this.db.collection('log').insertOne(info)
 }
 var yourDB

@@ -1,7 +1,7 @@
 const util = require('util')
 const path = require('path')
 var log_path = path.resolve(__dirname, 'log')
-var make_log = function(txt) {
+var make_log = function(txt ) {
   var now = new Date();
   var year = now.getFullYear();
   var month = Number(now.getMonth()) + 1;
@@ -9,14 +9,14 @@ var make_log = function(txt) {
   var hour = now.getHours();
   var minute = now.getMinutes();
   var second = now.getSeconds();
+  // 类似于c 的那种printf 
+  // es6 有模板字面量
   var str = util.format("[%d-%d-%d %d:%d:%d] INFO:%s\n", year, month, date, hour, minute, second, txt);
   //let info = {now,year,month,date,hour,minute,second,str}
   let info = {
   	time: now,
-  	method: str.split(":")[0],
     msg: txt
   }
-  console.log(str)
   return info
 }
 global.log = make_log

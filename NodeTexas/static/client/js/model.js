@@ -3,9 +3,9 @@ var model = (function() {
   //游戏主函数
   function model() {
     // 初始化本地数据
-    let getA1 = ajax({}).then().catch(),
-      getA2 = ajax({}).then().catch()
-    Promise.all([getA1, getA2]).then(() => {})
+    ajax({
+    	url : 'localhost:8080/'
+    })
 
     //卡池
     this.cardPool = []
