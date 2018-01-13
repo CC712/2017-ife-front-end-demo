@@ -2,10 +2,6 @@ const log = require('./log')
 const DB = require('./db').DB
 const http = require('./http')
 
-let user = {
-  uid: 77232,
-  name: 'test user'
-}
 let dbConfig = {
   db_name: 'server',
   db_ip: 'localhost',
@@ -15,18 +11,13 @@ var server = function(conf, cb = () => {}) {
   //DB
   new DB(conf, this, cb)
 }
-server.prototype.init = function() {
-}
+server.prototype.init = function() {}
 // 总的game 
 let tt = new server(dbConfig, () => {
-//let p1 = tt.db.insert('server', {
-//  name: 'cc3'
-//})
-//let p2 = tt.db.insert('server', {
-//  name: 'cc4'
-//})
   let p3 = tt.db.find('server', {
     name: /c3/
+  }, {
+    limit: 3
   })
   let p4 = tt.db.find('log', {}, {
     limit: 3
@@ -36,12 +27,12 @@ let tt = new server(dbConfig, () => {
   // 		log('关闭连接')
   // 		tt.db.close()
   // 	})
+  
   //http 通信服务器
   let http_conf = {
     port: 8080,
     server: tt
   }
-  console.log(http_conf)
   http.init(http_conf)
-  
+
 })

@@ -13,7 +13,7 @@ var make_log = function(txt) {
   //let info = {now,year,month,date,hour,minute,second,str}
   let info = {
   	time: now,
-  	method: txt.split(":")[0],
+  	method: str.split(":")[0],
     msg: txt
   }
   console.log(str)

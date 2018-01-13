@@ -1,0 +1,126 @@
+@import url("reset.css");
+.poker-1,
+.poker-3 {
+	color: red;
+}
+
+.pokers span {
+	display: inline-block;
+	font-size: 20px;
+	margin: 10px 5px;
+	padding: 10px 5px;
+	border: 1px solid black;
+	border-radius: 5px;
+	animation:1s pokerReverse ease-in;
+	backface-visibility: hidden;
+}
+@keyframes pokerReverse {
+	from{transform: rotateY(-90deg);}
+	to{transform: rotateY(0deg);}
+}
+
+.folded {
+	background: #C4C4C4;
+	color: black;
+}
+/*stage*/
+.stage{
+	display: flex;
+	position: relative;
+	flex-direction: column;
+	align-items: center;
+	
+}
+.players {
+	display: flex;
+}
+
+.players>div {
+	margin: 10px;
+}
+
+.banker {
+	display: flex;
+	justify-content: center;
+}
+
+.banker>div {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.players {
+	border: 1px solid #C4C4C4;
+}
+
+.ask {
+	display: none;
+	border: 1px solid black;
+	border-radius: 5px;
+	flex-direction: column;
+	align-items: center;
+}
+
+.ask input {
+	display: none;
+}
+
+.table {
+	position: relative;
+	display: flex;
+	background: green;
+	border-radius: 10px;
+	height: 200px;
+	width: 500px;
+}
+.table>div{
+	flex: 1;
+}
+/*chip field*/
+.chipField{
+}
+/*chip*/
+.droppedChip{
+	position: absolute;
+	height: 20px;
+	width: 20px;
+	transform:rotateX(-45deg);
+	border-radius: 50%;
+	color: black;
+	background-color: mediumspringgreen;
+	border: 2px solid red;
+	text-align: center;
+	line-height: 20px;
+	transition: all 1s ease-in-out;
+	top: 0;
+}
+.dropping{
+	animation:1s dropping ease-in-out forwards;
+}
+.getting{
+	/*animation:1s getting ease-in-out forwards;*/
+	top: 200px;
+	animation: 1.5s getting ease-in-out forwards;
+}
+/*drop animate*/
+@keyframes dropping{
+	from{transform: translate(0,1000%) rotateX(-45deg);}
+	to{transform: translate(0,0) rotateX(-45deg);}
+}
+@keyframes getting{
+	from{
+	opacity: 1;}
+	50%{opacity: 1;}
+	100%{opacity: 0;}
+}
+.start{
+	height: 30px;
+	font-size: 20px;
+	font-weight: 400;
+	width: 500px;
+	text-align: center;
+	background: black;
+	color: white;
+	border: 0;
+}
