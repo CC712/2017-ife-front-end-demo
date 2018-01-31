@@ -1,7 +1,9 @@
-import arange from './10ChangeAlgorithem'
-export default function valid(player) {
+//import arange from './10ChangeAlgorithem'
+const arange  = require('./10ChangeAlgorithem')
+module.exports = function valid(player, model) {
       // 所有的判定方法均返回一个数组 [ [具体对象]，[可能性2]]
-      let hand = player.hand.concat(this.banker.hand)
+     	
+      let hand = player.hand.concat(model.banker.hand)
       hand.sort((a, b) => a.key - b.key)
       //顺子
       var isStraight = (hand) => {

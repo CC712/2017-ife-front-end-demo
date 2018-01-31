@@ -17,12 +17,17 @@ function ajax(options = {
   // promise 化  时髦一点。。
   return new Promise((resolve, reject)=>{
   	var xhr = null
+  
   // 兼容 ie
   if(XMLHttpRequest) {
     xhr = new XMLHttpRequest()
   } else {
     xhr = new ActiveXObject('Microsoft.XHLHTTP')
   }
+  	// **重要** json 格式
+  	xhr.responseType = 'json'
+  	// CORS
+//	xhr.withCredentials = true
   var params = []
   for(let key in opt.data) {
     params.push(`${key}=${opt.data[key]}`)
@@ -39,16 +44,18 @@ function ajax(options = {
   } else {
     // put delete post
     xhr.open(opt.method, opt.url, opt.async);
-    xhr.setRequestHeader('Content-Type', 'application/json;charset=utf-8');
+    xhr.setRequestHeader("Content-Type", 'application/json;charset=utf-8');
     xhr.send(JSON.stringify(opt.data)); //string
   }
   xhr.onreadystatechange = function() {
     if(xhr.readyState == 4 && xhr.status == 200) {
-      resolve(xhr.responseText , xhr);
+    	// response 和 responstxt差别巨大 一个是json 一个是文本
+      resolve(xhr.response , xhr);
     } else if(xhr.readyState == 4 && xhr.status !== 200) {
-      reject(xhr.responseText, xhr)
+      reject(xhr.response, xhr)
     }
   }
   })
   
 }
+export default ajax

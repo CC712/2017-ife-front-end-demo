@@ -1,15 +1,16 @@
 //router get
 const express = require('express')
 const router = express.Router()
-const db = global.resolvePath('base_modules/db')
+const db = require('../../db')
 const jwt = require('jsonwebtoken')
 //verify user by jwt
-
+// 账号注册
 router.post('/', function(req, res, next) {
   console.log('**built token**', req.body)
+  
   var uid = String(req.body.uid),
     	pwd = String(req.body.pwd)
-
+		
   var ndb = db.getDB()
   console.log('$$$$$$$4conflict', uid, pwd)
   // comflict uid
@@ -20,8 +21,8 @@ router.post('/', function(req, res, next) {
   }).then(r => {
     if(r[0] == undefined) return new error('uid avaliable')
     res.send({
-      success: false,
-      msg: "account comflict"
+      code: 0,
+      msg: "account conflict"
     })
   }).catch(r => {
 
@@ -37,7 +38,7 @@ router.post('/', function(req, res, next) {
     // 注册后需要手动登录， 合理化cookie逻辑
 
     res.send({
-      code: 200,
+      code: 1,
       msg: 'register successful， PLZ login!'
     })
 

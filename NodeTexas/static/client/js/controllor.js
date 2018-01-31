@@ -1,52 +1,40 @@
 import TexasView from './view'
 import btn_handlers from './btn_handlers'
 
-function Controllor(ajaxConfig) {
-  var polling = null
-  let self = this
-
-  this.url = 'localhost:8080/api'
-
-  //初始化
-
-  // 轮询
-  polling = setInterval((self) => {
-    ajax(ajaxConfig).then((r) => {
-      self.model = r
-      self.view = new view(self.model, self)
-
-    })
-  }, 1000)
-
-  //this.view = new TexasView(this.model, this)
+function Controllor(model) {
+	/*
+	 *	
+	 * login
+	 *  | |
+	 * hall
+	 *	| |
+	 * game
+	 * 	
+	 * */
+  this.model = model
+  this.view = new TexasView(this.model, this)
 }
 // 验证牌型 
 Controllor.prototype.valid = function(ip) {
   if(ip) {
-    ajax({
-      method: 'get',
-      url: this.url + '/api/valid',
-      data: ip
-    }).then((m) => {
-      this.model = m
-      //数据驱动 view 也要有相应的变化
-      this.model =
-    })
-    //  this.model.validHand(ip)
+    this.model.validHand(ip)
     return
   }
+  this.model.players.forEach(p => console.log(this.model.validHand(p)))
 }
-
 //初始化   控制器 这就是   model -> dom html  
 Controllor.prototype.init = function(isTest) {
+  this.model.init()
+  let playerPart = this.view.el
 
-    this.model.init(isTest)
-    console.log('init')
-  },
-  Controllor.prototype.update = function() {
-    // differ old model and make change transition command
-
-  }
+  playerPart.querySelector('.stage-startBtn').addEventListener('click', () => {
+    this.start()
+  })
+  playerPart.querySelectorAll('.stage-select button').forEach(x => x.addEventListener('click', (e) => {
+    this.btnsHandler(e)
+  }))
+  console.log('init')
+}
 // 增加玩家
 Controllor.prototype.addPlayer = function() {
   let newplayer = this.model.addPlayer()
@@ -60,15 +48,25 @@ Controllor.prototype.start = function() {
   this.view.renderChipField()
   console.log('control start', this.model.players)
   //游戏开始
-  //button text  change
-  let btn = this.view.el.querySelector('button[class = start]')
-  btn.setAttribute('disabled', 'disabled')
-  btn.style.backgroundColor = '#ccc'
-  btn.innerText = '游戏中'
-  this.model.update()
+    //button text  change
+  	let btn = this.view.el.querySelector('button[class = stage-startBtn]')
+  	btn.setAttribute('disabled','disabled')
+  	btn.style.backgroundColor = '#ccc'
+  	btn.innerText = '游戏中'
 }
 Controllor.prototype.btnsHandler = function(e) {
-
+  let target = e.target
+  let method = target.getAttribute('data-btn')
+  console.log('btn press', '===', this.model.pos)
+  btn_handlers[method].call(this.model)
+  console.log('可以往下了')
+  
+  if(this.model.state == 'start'){
+  	let btn = this.view.el.querySelector('button[class = stage-startBtn]')
+  	btn.removeAttribute('disabled')
+  	btn.style.backgroundColor = 'black'
+  	btn.innerText = '开始游戏'
+  }
 }
 //handler
 

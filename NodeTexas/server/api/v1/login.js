@@ -2,11 +2,11 @@ const assert = require('assert')
 //router get
 const express = require('express')
 const router = express.Router()
-const db = global.resolvePath('base_modules/db')
+const db = require('../../db')
 const jwt = require('jsonwebtoken')
 //verify user by jwt
-//token 登录 维持状态 
 
+//token 登录 维持状态 
 router.get('/', function(req, res, next) {
   console.log('auto login by token')
   let token = req.cookies ? req.cookies.token : ''
@@ -36,8 +36,6 @@ router.get('/', function(req, res, next) {
     uid: uid
   }).then(r => {
     if(r.length == 1) r = r[0]
-   
-
     res.send({
     	code:200,
       msg: 'successful verification!',
@@ -52,7 +50,7 @@ router.get('/', function(req, res, next) {
 router.post('/', function(req, res, next) {
   console.log('**built token**', req.body)
   var ndb = db.getDB()
-  var uid = String(req.body.uid),
+  var uid = Number(req.body.uid),
     pwd = String(req.body.pwd)
     // 签发的token 应该有一定的持续时间
 		// 登录的时候应该是 无限期
@@ -81,14 +79,14 @@ router.post('/', function(req, res, next) {
     }
     //jwt 储存为cookie  
     // 主动登录应刷新 client 的token expires and maxAge
-    // 
-    let domain = req.domain
+    // 跨域不能设置cookie 
+    //前端的Domain 和后端的Host 不一致的时候就不可以吗？
+    let domain = 'localhost'//req.domain
+    console.log('req domain',req.domain)
     res.cookie("token", new_token, {
-      domain: 'localhost',
       path: '/'
     })
     res.cookie('isLogin', true, {
-      domain: 'localhost',
       path: '/'
     })
     res.send({

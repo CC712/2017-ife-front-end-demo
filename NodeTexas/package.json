@@ -6,12 +6,16 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack -w",
-	"gogo" : "sh goServer.sh"
+    "gogo": "sh goServer.sh",
+    "build": "babel src -d lib"
   },
   "author": "CC712",
   "license": "ISC",
   "dependencies": {
     "webpack": "^3.10.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1"
+  }
 }
