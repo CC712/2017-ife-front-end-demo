@@ -24,4 +24,5 @@
 //		return this(key)
 //	}
 //}
+//key 越小 牌面越大
 module.exports = Poker

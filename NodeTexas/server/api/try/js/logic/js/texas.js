@@ -53,18 +53,7 @@ var Texas = (function() {
       }
       //初始化玩家手牌
       this.players.forEach(p => p.init())
-      //测试玩家
-      if(isTest) {
-        let tp = this.players[0] || this.addPlayer()
-        tp.hand = makehand(4)
-        this.cardPool = this.cardPool.filter(x => {
-          let fg = true
-          tp.hand.forEach(k => {
-            fg = k.key == x.key ? false : fg
-          })
-          return fg
-        })
-      }
+     
       //notify banker
       this.notifyObs('banker')
     },

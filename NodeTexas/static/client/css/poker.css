@@ -1,3 +1,8 @@
+
+/* global */
+[data-hide = true]{
+	 display: none;
+}
 .poker-1,
 .poker-3 {
 	color: red;
@@ -32,20 +37,25 @@
 /* back */
 
 .back {
+	display: block;
 	font-size: 30px;
 	position: absolute;
 	left: 0;
 	top: 0;
 	margin: 10px;
 	padding: 5px 8px;
-	color: #FFFFFF;
+	box-shadow: 5px 5px 3px #888888;
 	border-radius: 5px;
 	cursor: pointer;
 }
 
-.back:hover {}
+.back:hover {
+	
+}
 
-.back:active {}
+.back:active {
+	transform: translate(2px, 2px);
+}
 
 
 /* login */
@@ -80,6 +90,10 @@
 	color: white;
 	background-color: cornflowerblue;
 	cursor: pointer;
+}
+.login button:active{
+	transform:translate(2px, 2px);
+	box-shadow: 5px 5px 1px #48576A;
 }
 
 
@@ -152,22 +166,66 @@
 /*stage*/
 
 .stage {
+	margin: 0 auto;
+	margin-top: 200px;
 	display: none;
+	
+}
+.stage-wrap {
+	display: flex;
 	position: relative;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	margin: 0 auto;
+
+	justify-content: center;
+	
 }
 
 .stage-players {
 	display: flex;
+	position:relative;
 }
 
 .stage-players>div {
 	margin: 10px;
 }
+/* player */
 
+.stage-players [data-role = host]:before {
+	position: absolute;
+	content: '房主';
+	color:gold;
+	font-weight: 700;
+	font-size: 15px;
+	border:2px solid gold;
+	transform: rotate(-45deg) translate(-20px, -5px);
+	opacity: 0.4;
+}
+.stage-players [data-ready = true]:after{
+	position:absolute;
+	content: 'READY';
+	color:red;
+	font-weight: 700;
+	font-size: 20px;
+	border:2px solid red;
+	transform:  translate(30%, -30%);
+	opacity: 0.8;
+}
+.stage-players [data-cur = true]{
+	border: 2px solid gold;	
+}
+.stage-players .self {
+	position: absolute;
+	border: 2px solid red;
+	color: red;
+	font-family: "微软雅黑";
+	font-weight: 700;
+	font-size: 15px;
+	opacity: 0.5;
+	z-index:-1;
+	transform: rotate(-45deg) translate(-20%, 30%);	
+}
 .stage-banker {
 	display: flex;
 	justify-content: center;
@@ -181,10 +239,14 @@
 
 .stage-players {
 	border: 1px solid #C4C4C4;
+	display: flex;
+	justify-content: center;
+}
+.stage-player {
+	
 }
 
 .stage-askBlock {
-	/*display: none;*/
 	justify-content: center;
 	border: 1px solid black;
 	border-radius: 5px;
@@ -205,17 +267,20 @@
 	flex: 1;
 }
 
-.state-select {
+.stage-select {
 	display: flex;
 }
 
-.state-btn {
+.stage-btn {
 	flex: 1;
 	border: 0;
+	color:white;
+	font-size:20px;
 	background-color: #48576A;
+	cursor:pointer;
 }
-
-.state-startBtn {
+.stage-startBtn, 
+.stage-startBtn.disable {  
 	height: 30px;
 	font-size: 20px;
 	font-weight: 400;
@@ -224,6 +289,13 @@
 	background: black;
 	color: white;
 	border: 0;
+	cursor:pointer;
+}
+.stage-startBtn.disable {
+	color: black;
+	background: #DCDCDC;
+	opacity: 0.4;
+	cursor: not-allowed;
 }
 
 

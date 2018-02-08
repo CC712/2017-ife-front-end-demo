@@ -29,7 +29,7 @@
 		<div class="hall">
 			<h2>大厅</h2>
 			<ul class="hall-list">
-				<li class="hall-room hall-room.waiting">
+				<!--<li class="hall-room hall-room.waiting">
 					<h2 class="hall-title">title default</h2>
 					<p class="hall-abstract">abstract default</p>
 					<span class="hall-players">1</span>
@@ -40,12 +40,12 @@
 					<p class="hall-abstract">abstract default</p>
 					<span class="hall-players">1</span>
 					<p class="hall-state">游戏中</p>
-				</li>
+				</li>-->
 			</ul>
 		</div>
 		<div class="stage">
-
-			<div class="stage-banker">
+			<div class = 'stage-wrap'>
+				<div class="stage-banker">
 
 			</div>
 			<div class="stage-table">
@@ -54,7 +54,6 @@
 			<div class='stage-players'>
 
 			</div>
-			<button class="stage-startBtn">开始游戏</button>
 			<div class="stage-askBlock">
 				<div class="stage-askMsg">
 					<p>提示</p>
@@ -66,13 +65,15 @@
 					<button data-btn='fold' class="stage-btn stage-btn_fold">盖牌</button>
 				</div>
 			</div>
+			<button class="stage-startBtn">加入游戏</button>
+			
+			</div>
+			
 		</div>
 
 	</body>
 	<script>
 		var $ = r => document.querySelector(r)
-		//			$('.hall').style.display = 'none'
-		//			$('.table').style.display = 'none'
 	</script>
 	<script src="./client/dist/bundle.js" type="text/javascript">
 	</script>

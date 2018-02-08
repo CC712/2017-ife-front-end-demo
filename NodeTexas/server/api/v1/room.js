@@ -48,12 +48,19 @@ router.post('/:roomid/start', function(req, res, next) {
   console.log('*room*  game start')
   let roomid = req.params.roomid
   req.room = cache.getRoomById(roomid)
-  req.room.model.start()
+  var err = req.room.model.start()
+  if(! err){
   res.send({
     code: 1,
     msg: 'model start',
     data: req.room.model
   })
+  } else {
+  	res.send({
+  		code : 0,
+  		msg : err
+  	})
+  }
 
 })
 //search room
@@ -64,7 +71,7 @@ router.get('/:id', function(req, res, next) {
 
   res.send({
     code: 1,
-    msg: 'return id rooms',
+    msg: `return rooms' data`,
     data: cache.getRoomById(id)
   })
 

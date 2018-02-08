@@ -1,4 +1,6 @@
 #!/bin/sh
-echo 'one key start db and backend'
-nohup test.sh &
-sh goServer.sh 
+echo 'backend starting'
+nohup sh test.sh &
+echo 'db started!'
+nohup sh goServer.sh &
+echo 'server started !'

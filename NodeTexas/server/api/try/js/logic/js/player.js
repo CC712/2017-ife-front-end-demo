@@ -8,11 +8,16 @@ function Player(data, model) {
   // 0 moved 1 willmove 2 dead 3 watching
   this.state = 3
   this.pokerValue = null
+  this.isHost = false
+  this.isReady = false
 }
 Player.prototype = {
   init: function(data) {
+//	console.log('HERE PLAYER BE INITED !!!!!!!!!!!!!!!!!!!!!')
     this.hand = []
     this.outChip = 0
+    this.state = 3
+    this.isReady = false
     for(let i in data)
     	this[i] = data[i]
   },

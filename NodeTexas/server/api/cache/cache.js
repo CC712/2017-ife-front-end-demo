@@ -16,7 +16,7 @@ function ROOM(config) {
   //state dictionary
   var waiting = 0,
     playing = 1,
-    noone = 2
+    full = 2
 
   this.state = waiting
   this.model = new Model() // use its functions to modify itself

@@ -53,6 +53,4 @@ app.use(function(req, res, next) {
   res.status(404).end('404 NOT FOUND');
   //res.send();
 });
-app.listen(8080, () => {
-  console.log('http server listenning the port ' + 8080)
-})
+app.listen(8080)

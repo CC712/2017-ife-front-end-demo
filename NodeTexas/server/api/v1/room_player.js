@@ -16,8 +16,9 @@ router.get('/', (req, res, next) => {
     data: req.room.model.players
   })
 })
+//房主认定
 
-//add player
+//valid uid 
 router.post('/:uid', function(req, res, next) {
   var uid = req.params.uid,
     room = req.room
@@ -29,16 +30,16 @@ router.post('/:uid', function(req, res, next) {
       msg: 'already in this room',
       data: room.model
     })
-    return
+  } else {
+    next()
   }
-
-  //is_uid_valid = room.findPlayer(uid) find 这个函数式promise的，所以要then
-  /* 
-   * async function findPlayer(){}
-   * await is_uid_valid = room.findPlayer(uid)
-   * */
-  if(room /*&&  is_uid_valid */ ) {
-
+})
+//add player
+router.post('/:uid', function(req, res, next) {
+  var uid = req.params.uid,
+    room = req.room
+  if(room) {
+	// mark host	
     room.model.insertPlayer(uid).then(_ => {
       res.send({
         code: 1,
@@ -55,7 +56,50 @@ router.post('/:uid', function(req, res, next) {
   }
 
 })
-//player can do  handler
+//delete player
+router.delete('/:uid', (req, res, next) => {
+  var uid = Number(req.params.uid),
+    troom = req.room
+
+  if(troom.model.findPlayer(uid)) {
+    troom.model.removePlayer(uid)
+
+    res.send({
+      code: 1,
+      msg: 'leave successfully',
+      data: troom.model
+    })
+  } else {
+    res.send({
+      code: 0,
+      msg: 'invalid player'
+    })
+  }
+})
+//ready unready
+router.post('/:uid/ready', (req, res, next) => {
+
+  var uid = req.params.uid,
+    room = req.room
+  var p = room.model.players.find(p => p.uid == uid)
+  p.isReady = !p.isReady
+  console.log(`player:${p.uid} change state to ${p.isReady}`)
+
+  if(!uid || !p) {
+    res.send({
+      code: 0,
+      msg: "invalid uid or p"
+    })
+  } else {
+    res.send({
+      code: 1,
+      msg: `player ${uid} state change to ${p.isReady}`,
+      data: room.model
+    })
+  }
+
+})
+//player can do  handler on it turn
 router.post('/:uid/:fn', (req, res, next) => {
   var uid = Number(req.params.uid),
     fn = req.params.fn,
@@ -67,16 +111,15 @@ router.post('/:uid/:fn', (req, res, next) => {
   // 是否是当前玩家，是否是当前 状态
   var state = troom.model.state,
     cur_player = troom.model.players[troom.model.pos]
-  if(state !== 'turn' 
-  ) {
+  if(state !== 'turn') {
     res.send({
       code: 0,
       msg: `invalid request for now [${state}]  state`
     })
     return
   }
-  if(cur_player.uid != uid){
-  	 res.send({
+  if(cur_player.uid != uid) {
+    res.send({
       code: 0,
       msg: `invalid player for now [${cur_player.uid}]  uid`
     })
@@ -85,7 +128,8 @@ router.post('/:uid/:fn', (req, res, next) => {
   try {
     troom.model.playerFn(fn, uid, args)
     //model state change 
-    troom.model.update()
+    console.log('in the router update')
+    
     /* 有问题  buggy*/
     res.send({
       code: 1,
@@ -100,5 +144,6 @@ router.post('/:uid/:fn', (req, res, next) => {
     })
   }
 })
-//
+//leave
+
 module.exports = router

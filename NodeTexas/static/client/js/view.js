@@ -4,6 +4,7 @@ function view(model, controllor) {
   this.el = document.querySelector('.stage')
   this.table = document.querySelector('.stage-table')
   this.playerTemplate = `<div class="player">
+  		<p class = 'self'>You</p>
 			<p class='name'></p><p>剩余筹码:<span	 class='chip'></span></p>
 			<p>下注筹码:<span	 class='outChip'></span></p>
 			<div class='pokers'></div>	
@@ -21,12 +22,12 @@ function view(model, controllor) {
   this.model.regObs('ask', this.renderAsk.bind(this))
   this.model.regObs('dropChip', this.dropChipAnimate.bind(this))
   this.model.regObs('getChip', this.getChipAnimate.bind(this))
+  this.model.regObs('start-btn', this.renderStartBtn.bind(this))
 }
 view.prototype = {
   init: function() {
     this.table.innerHTML = ''
     console.log('chip init')
-
   },
   renderBanker: function() {
     let obj = this.model.banker
@@ -42,15 +43,21 @@ view.prototype = {
         card.setAttribute('class', `poker-${p.type}`)
         card.innerText = `${p.cardFace}`
         dom.querySelector('.pokers').appendChild(card)
-      }, )
+      })
     }
   },
   renderOne: function(player) {
     var dom = document.querySelector(`[data-uid=uid${player.uid}]`) || document.createElement('div')
-    console.log('renderOne:', player)
+    //  console.log('renderOne:', player)
     dom.innerHTML = this.playerTemplate
     dom.setAttribute('data-uid', 'uid' + player.uid)
-    dom.querySelector('.name').innerText = player.name
+    // host
+    if(player.isHost)
+      dom.setAttribute('data-role', 'host')
+    else dom.setAttribute('data-role', 'guest')
+    dom.setAttribute('data-ready', player.isReady && this.model._isGaming == false)
+
+    dom.querySelector('.name').innerText = player.name || `u${player.uid}`
     dom.querySelector('.chip').innerText = player.chip
     dom.querySelector('.outChip').innerText = player.outChip
     // 		dom.querySelector('.poker-value').innerText = player.pokerValue[2] + '=》' + player.pokerValue[1]
@@ -61,6 +68,26 @@ view.prototype = {
       card.innerText = `${p.cardFace}`
       dom.querySelector('.pokers').appendChild(card)
     })
+    //self 
+    if(player.uid == this.model._uid) {
+      dom.querySelector('.self').setAttribute('data-hide', false)
+    } else {
+      dom.querySelector('.self').setAttribute('data-hide', true)
+    }
+    //current player 
+    var cur_player = this.model.players[this.model.pos]
+    //player uid not exists 
+    if(cur_player) {
+      console.log('cur player', cur_player.uid, player.uid)
+      if(player.uid == cur_player.uid) {
+        dom.setAttribute('data-cur', true)
+      } else {
+        dom.setAttribute('data-cur', false)
+      }
+    }
+    //player
+    var isGaming = this.model._isGaming
+    var modelState = this.model.state
     player.el = dom
     if(player.state == 2) {
       player.el.setAttribute('class', 'folded')
@@ -75,27 +102,83 @@ view.prototype = {
       this.renderOne(player)
     })
   },
-  renderAsk: function() {
-    var bool = this.model.state == 'turn'
-    if(bool) {
-      var players = this.model.players,
-        p = players[this.model.pos || 0],
-        el = this.el.querySelector(`.player [data-uid=uid${p.uid}]`)
+  renderAsk: function(hide) {
+    var isTurn = this.model.state == 'turn',
+      isGaming = this.model._isGaming
+    var dom = this.askTemplate || document.querySelector('.stage-askBlock')
+    if(isTurn && isGaming) {
+    	if(this.model.pos != undefined){
+      var isUidCorrect = this.model._uid == this.model.players[this.model.pos].uid
+      console.log('ASK =>', this.model, isUidCorrect)
+      if(isUidCorrect) {
+        dom.setAttribute('data-hide', false)
+      } else {
+        dom.setAttribute('data-hide', true)
+      }
+      }
+    } else {
+      dom.setAttribute('data-hide', true)
+    }
 
-        console.log('ASK =>', p, this.model.pos)
-      let dom = this.askTemplate || document.querySelector('.stage-askBlock')
-      appendedPlayer.appendChild(dom)
-
-      dom.style.display = 'flex'
+  },
+  //btn of start
+  renderStartBtn: function(uid) {
+    if(uid != undefined) {
+      this.model._uid = uid
+    }
+    var _uid = this.model._uid,
+      m = this.model,
+      isGaming = m._isGaming,
+      btn = document.querySelector('button[class ~= stage-startBtn]'),
+      modelState = m.state
+      //perhaps p = undefined
+      var p = m.players.find(p => p.uid == _uid)
+      if(!p) return 
+      var isHost = p.isHost,
+      isReady = p.isReady
+    console.log('render btn', isGaming, p, m)
+    // 异步的情况下会导致 btn 所绑定的 dom 丢失 ? 
+    var branches = {
+      isHost: {
+        'true': function() {
+          btn.setAttribute('class', 'stage-startBtn')
+          btn.disabled = false
+          btn.innerText = '点击开始游戏'
+        },
+        'false': function() {
+          btn.setAttribute('class', 'stage-startBtn')
+          btn.disabled = false
+          if(isReady) {
+            btn.innerText = '取消准备'
+          } else
+            btn.innerText = '准备'
+        }
+      },
+      isGaming: function() {
+        btn.setAttribute('class', 'stage-startBtn stage-startBtn.disable')
+        btn.disabled = true
+        btn.innerText = '游戏中'
+      }
+    }
+    console.log('START BTN RANDER PARAMS', isGaming, isHost)
+    if(isGaming) {
+      btn.setAttribute('data-hide', true)
+      branches.isGaming()
+    } else {
+      btn.setAttribute('data-hide', false)
+      branches.isHost[isHost]()
     }
   },
   //render chipfield
   renderChipField: function() {
     this.model.players.forEach(p => {
+
       let field = document.createElement('div')
       field.setAttribute('class', 'chipField')
       p.chipField = field
       this.table.appendChild(field)
+      console.log('render chip field', p)
+
     })
   },
   //丢筹码动画效果	

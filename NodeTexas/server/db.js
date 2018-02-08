@@ -60,7 +60,7 @@ DB.prototype.close = function() {
 DB.prototype.log = function(txt, is_mute = false) {
   let info = log(txt)
   !is_mute && console.log(info)
-  this.db.collection('log').insertOne(info)
+  this.db && this.db.collection('log').insertOne(info)
 }
 var yourDB
 exports.createDB = function createDB() {

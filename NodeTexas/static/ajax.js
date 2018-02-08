@@ -12,7 +12,7 @@ function ajax(options = {
   opt.method = opt.method.toUpperCase() || 'GET';
   opt.url = opt.url || '';
   opt.async = opt.async || true;
-  opt.data = opt.data || null;
+  opt.data = opt.data || {};
   opt.success = opt.success || function() {};
   // promise 化  时髦一点。。
   return new Promise((resolve, reject)=>{

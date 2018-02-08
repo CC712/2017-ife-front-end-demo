@@ -2,8 +2,7 @@
 const arange  = require('./10ChangeAlgorithem')
 module.exports = function valid(player, model) {
       // 所有的判定方法均返回一个数组 [ [具体对象]，[可能性2]]
-     	
-      let hand = player.hand.concat(model.banker.hand)
+      var hand = player.hand.concat(model.banker.hand)
       hand.sort((a, b) => a.key - b.key)
       //顺子
       var isStraight = (hand) => {
@@ -97,7 +96,6 @@ module.exports = function valid(player, model) {
         }
         return re.slice(0,5)
         //返回同花的数组 最大的一组就行了
-
       }
       //同花顺
       var isSF = (hand) => {
@@ -118,11 +116,19 @@ module.exports = function valid(player, model) {
       var isFour = (hand) => {
         let iValue = hand.map(x => x.val)
         let s = hand.filter((x, i) => iValue.indexOf(x.val) - iValue.lastIndexOf(x.val) <= -3)
-        if(s.length >= 4) {
-          let one = hand.filter(x => s.indexOf(x) == -1)[0]
-          s.slice(0,4).push(one)
-           console.log(s.slice(0,4),one)
-           return s
+        // O(n^2)
+        var f = hand.filter(i => {
+        	return hand.filter(h => h.val == i.val).length == 4
+        })
+        console.log('four', f, iValue)
+        if(f.length > 0){
+         var o = hand.sort((a, b) => {
+         	return a.key > b.key
+         })
+         o = o.find(p => p.val != f[0].val)
+         f.push(o)
+         console.log('four get ', f)
+         return  f
         } else {
           return false
         }
@@ -154,8 +160,8 @@ module.exports = function valid(player, model) {
 			let m = methods[i]
 			
 			if(m(hand)) ans = [m(hand),i,translate2cn[i]]
-//			console.log(m.name,'==>',ans)
 			i++
 		}
+		console.log('player valid', player)
 		return ans
     }
